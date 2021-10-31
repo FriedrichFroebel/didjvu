@@ -282,7 +282,7 @@ def bundle_djvu_via_indirect(*component_filenames):
                 page_size = 0
             page_sizes += [page_size]
         with temporary.file(dir=tmpdir, suffix='djvu') as index_file:
-            index_file.write(_djvu_header)
+            index_file.write(_djvu_header.encode())
             index_file.write(struct.pack('>H', len(page_ids)))
             index_file.flush()
             bzz = ipc.Subprocess(['bzz', '-e', '-', '-'], stdin=ipc.PIPE, stdout=index_file)
@@ -292,8 +292,8 @@ def bundle_djvu_via_indirect(*component_filenames):
                 for page_id in page_ids:
                     bzz.stdin.write(struct.pack('B', not page_id.endswith('.iff')))
                 for page_id in page_ids:
-                    bzz.stdin.write(page_id)
-                    bzz.stdin.write('\0')
+                    bzz.stdin.write(page_id.encode())
+                    bzz.stdin.write('\0'.encode())
             finally:
                 bzz.stdin.close()
                 bzz.wait()
