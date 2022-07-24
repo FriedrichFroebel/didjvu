@@ -169,18 +169,18 @@ def _load_methods():
     replace_suffix = re.compile('_threshold$').sub
     class _methods(object):
         pass
-        # from gamera.plugins.threshold import abutaleb_threshold
-        # from gamera.plugins.threshold import bernsen_threshold
-        # from gamera.plugins.threshold import djvu_threshold
-        # from gamera.plugins.threshold import otsu_threshold
-        # from gamera.plugins.threshold import threshold as global_threshold
-        # from gamera.plugins.threshold import tsai_moment_preserving_threshold as tsai
-        # # TODO: from gamera.plugins.binarization import gatos_threshold
-        # from gamera.plugins.binarization import brink_threshold
-        # from gamera.plugins.binarization import niblack_threshold
-        # from gamera.plugins.binarization import sauvola_threshold
-        # from gamera.plugins.binarization import shading_subtraction
-        # from gamera.plugins.binarization import white_rohrer_threshold
+        from gamera.plugins.threshold import abutaleb_threshold
+        from gamera.plugins.threshold import bernsen_threshold
+        from gamera.plugins.threshold import djvu_threshold
+        from gamera.plugins.threshold import otsu_threshold
+        from gamera.plugins.threshold import threshold as global_threshold
+        from gamera.plugins.threshold import tsai_moment_preserving_threshold as tsai
+        # TODO: from gamera.plugins.binarization import gatos_threshold
+        from gamera.plugins.binarization import brink_threshold
+        from gamera.plugins.binarization import niblack_threshold
+        from gamera.plugins.binarization import sauvola_threshold
+        from gamera.plugins.binarization import shading_subtraction
+        from gamera.plugins.binarization import white_rohrer_threshold
     methods = {}
     for name, plugin in vars(_methods).items():
         if name.startswith('_'):
