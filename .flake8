@@ -10,4 +10,6 @@ exclude =
     dist,
     # IDEs.
     .idea,
+    # CI environment.
+    deps,
 max-line-length = 140
