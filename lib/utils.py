@@ -13,27 +13,31 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''various helper functions'''
+"""
+Various helper functions
+"""
 
 import os
 
-debian = os.path.exists('/etc/debian_version')
+IS_DEBIAN = os.path.exists('/etc/debian_version')
+
 
 def enhance_import_error(exception, package, debian_package, homepage):
-    has_debian_package = bool(debian and debian_package)
+    has_debian_package = bool(IS_DEBIAN and debian_package)
     message = str(exception)
     if has_debian_package:
         package = debian_package
-    message += '; please install the {pkg} package'.format(pkg=package)
+    message += f'; please install the {package} package'
     if not has_debian_package:
-        message += ' <{url}>'.format(url=homepage)
+        message += f' <{homepage}>'
     exception.msg = message
 
-class namespace(object):
+
+class Namespace:
     pass
 
-class Proxy(object):
 
+class Proxy:
     def __init__(self, obj, wait_fn, temporaries):
         self._object = obj
         self._wait_fn = wait_fn
@@ -53,10 +57,11 @@ class Proxy(object):
         self._wait_fn = int
         return setattr(self._object, name, value)
 
+
 __all__ = [
+    'Namespace',
     'Proxy',
     'enhance_import_error',
-    'namespace',
 ]
 
 # vim:ts=4 sts=4 sw=4 et

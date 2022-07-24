@@ -28,7 +28,7 @@ class EnhanceImportTestCase(TestCase):
         sys.modules['nonexistent'] = None
 
     def test_debian(self):
-        with mock.patch.object(utils, 'debian', True):
+        with mock.patch.object(utils, 'IS_DEBIAN', True):
             with self.assertRaises(expected_exception=ImportError) as exception_manager:
                 try:
                     # noinspection PyUnresolvedReferences
@@ -51,7 +51,7 @@ class EnhanceImportTestCase(TestCase):
             )
 
     def test_debian_without_debian_package_name(self):
-        with mock.patch.object(utils, 'debian', True):
+        with mock.patch.object(utils, 'IS_DEBIAN', True):
             with self.assertRaises(expected_exception=ImportError) as exception_manager:
                 try:
                     # noinspection PyUnresolvedReferences
@@ -74,7 +74,7 @@ class EnhanceImportTestCase(TestCase):
             )
 
     def test_non_debian(self):
-        with mock.patch.object(utils, 'debian', False):
+        with mock.patch.object(utils, 'IS_DEBIAN', False):
             with self.assertRaises(expected_exception=ImportError) as exception_manager:
                 try:
                     # noinspection PyUnresolvedReferences

@@ -13,27 +13,29 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''filesystem functions'''
+"""
+Filesystem functions
+"""
 
 import os
 
-_block_size = 1 << 20  # 1 MiB
+_BLOCK_SIZE = 1 << 20  # 1 MiB
+
 
 def copy_file(input_file, output_file):
     length = 0
     while True:
-        block = input_file.read(_block_size)
+        block = input_file.read(_BLOCK_SIZE)
         if not block:
             break
         length += len(block)
         output_file.write(block)
     return length
 
+
 def replace_ext(filename, ext):
-    return '{0}.{1}'.format(
-        os.path.splitext(filename)[0],
-        ext
-    )
+    return f'{os.path.splitext(filename)[0]}.{ext}'
+
 
 __all__ = [
     'copy_file',

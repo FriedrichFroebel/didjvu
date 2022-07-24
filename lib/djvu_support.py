@@ -13,15 +13,17 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''wrappers for the DjVuLibre utilities'''
+"""
+Wrappers for the DjVuLibre utilities
+"""
 
 import os
 import re
 import struct
 
-from . import ipc
-from . import temporary
-from . import utils
+from lib import ipc
+from lib import temporary
+from lib import utils
 
 DPI_MIN = 72
 DPI_DEFAULT = 300
@@ -40,34 +42,24 @@ IW44_SLICES_DEFAULT = (74, 89, 99)
 IW44_N_SLICES_MAX = 63
 # https://sourceforge.net/p/djvu/djvulibre-git/ci/release.3.5.27.1/tree/tools/c44.cpp#l246
 
-class Crcb(object):
 
+class Crcb:
     def __init__(self, sort_key, name):
         self._sort_key = sort_key
         self._name = name
 
-    # Not supported in Python 3, but does not seem to be used/required at all.
-    # Migration guide: https://stackoverflow.com/questions/8276983/
-    #def __cmp__(self, other):
-        #if not isinstance(other, Crcb):
-            #return NotImplemented
-        #return cmp(self._sort_key, other._sort_key)
-
     def __str__(self):
         return self._name
 
-class CRCB(object):
 
-    values = [
-        Crcb(3, 'full'),
-        Crcb(2, 'normal'),
-        Crcb(1, 'half'),
-        Crcb(0, 'none'),
-    ]
+class CRCB:
+    full = Crcb(3, 'full')
+    normal = Crcb(2, 'normal')
+    half = Crcb(1, 'half')
+    none = Crcb(0, 'none')
 
-for _value in CRCB.values:
-    setattr(CRCB, str(_value), _value)
-del _value
+    values = [full, normal, half, none]
+
 
 def bitonal_to_djvu(image, dpi=300, loss_level=0):
     pbm_file = temporary.file(suffix='.pbm')
@@ -82,6 +74,7 @@ def bitonal_to_djvu(image, dpi=300, loss_level=0):
     ]
     return utils.Proxy(djvu_file, ipc.Subprocess(args).wait, [pbm_file])
 
+
 def photo_to_djvu(image, dpi=100, slices=IW44_SLICES_DEFAULT, gamma=2.2, mask_image=None, crcb=CRCB.normal):
     ppm_file = temporary.file(suffix='.ppm')
     image.save(ppm_file.name)
@@ -92,8 +85,8 @@ def photo_to_djvu(image, dpi=100, slices=IW44_SLICES_DEFAULT, gamma=2.2, mask_im
             'c44',
             '-dpi', str(dpi),
             '-slice', ','.join(map(str, slices)),
-            '-gamma', '{0:.1f}'.format(gamma),
-            '-crcb{0}'.format(crcb),
+            '-gamma', f'{gamma:.1f}',
+            f'-crcb{crcb}',
         ]
         if mask_image is not None:
             pbm_file = temporary.file(suffix='.pbm')
@@ -104,6 +97,7 @@ def photo_to_djvu(image, dpi=100, slices=IW44_SLICES_DEFAULT, gamma=2.2, mask_im
         ipc.Subprocess(args).wait()
         return temporary.hardlink(djvu_path, suffix='.djvu')
 
+
 def djvu_to_iw44(djvu_file):
     # TODO: Use Multichunk.
     iw44_file = temporary.file(suffix='.iw44')
@@ -111,12 +105,14 @@ def djvu_to_iw44(djvu_file):
     with open(os.devnull, 'wb') as dev_null:
         return utils.Proxy(iw44_file, ipc.Subprocess(args, stderr=dev_null).wait, [djvu_file])
 
+
 def _int_or_none(x):
     if x is None:
         return
     if isinstance(x, int):
         return x
     raise TypeError
+
 
 def _chunk_order(key):
     # INCL must go before Sjbz.
@@ -127,11 +123,11 @@ def _chunk_order(key):
         return -1
     return 0
 
-class Multichunk(object):
 
+class Multichunk:
     _chunk_names = 'Sjbz Smmr BG44 BGjp BG2k FGbz FG44 FGjp FG2k INCL Djbz'
     _chunk_names = {x.lower(): x for x in _chunk_names.split()}
-    _info_re = re.compile(' ([0-9]+)x([0-9]+),.* ([0-9]+) dpi,').search
+    _info_re = re.compile(r' (\d+)x(\d+),.* (\d+) dpi,').search
 
     def __init__(self, width=None, height=None, dpi=None, **chunks):
         self.width = _int_or_none(width)
@@ -211,13 +207,13 @@ class Multichunk(object):
         args = ['djvuextract', self._file.name]
         chunk_files = {}
         for key in self._dirty:
-            chunk_file = temporary.file(suffix='.{key}-chunk'.format(key=key))
-            args += ['{key}={path}'.format(key=self._chunk_names[key], path=chunk_file.name)]
+            chunk_file = temporary.file(suffix=f'.{key}-chunk')
+            args += [f'{self._chunk_names[key]}={chunk_file.name}']
             chunk_files[key] = chunk_file
         with open(os.devnull, 'wb') as dev_null:
-            djvuextract = ipc.Subprocess(args, stderr=dev_null)
+            djvu_extract = ipc.Subprocess(args, stderr=dev_null)
         for key in self._chunks:
-            self._chunks[key] = utils.Proxy(chunk_files[key], djvuextract.wait, [self._file])
+            self._chunks[key] = utils.Proxy(chunk_files[key], djvu_extract.wait, [self._file])
             self._dirty.discard(key)
         assert not self._dirty
         # The file reference is not needed anymore.
@@ -234,7 +230,7 @@ class Multichunk(object):
             raise ValueError
         if len(self._chunks) == 0:
             raise ValueError
-        args = ['djvumake', None, 'INFO={w},{h},{r}'.format(w=self.width, h=self.height, r=self.dpi)]
+        args = ['djvumake', None, f'INFO={self.width},{self.height},{self.dpi}']
         incl_dir = None
         for key, value in sorted(self._chunks.items(), key=_chunk_order):
             try:
@@ -256,9 +252,11 @@ class Multichunk(object):
                 value = value.name
             if key == 'BG44':
                 value += ':99'
-            args += ['{key}={value}'.format(key=key, value=value)]
+            args += [f'{key}={value}']
+
         def chdir():
             os.chdir(incl_dir or '.')
+
         with temporary.directory() as tmpdir:
             djvu_filename = args[1] = os.path.join(tmpdir, 'result.djvu')
             ipc.Subprocess(args, preexec_fn=chdir).wait()
@@ -268,7 +266,9 @@ class Multichunk(object):
             self._pristine = True
             return self._file
 
+
 _djvu_header = b'AT&TFORM\0\0\0\0DJVMDIRM\0\0\0\0\1'
+
 
 def bundle_djvu_via_indirect(*component_filenames):
     with temporary.directory() as tmpdir:
@@ -313,16 +313,18 @@ def bundle_djvu_via_indirect(*component_filenames):
             ipc.Subprocess(['djvmcvt', '-b', index_file.name, djvu_file.name]).wait()
     return djvu_file
 
+
 def bundle_djvu(*component_filenames):
     assert len(component_filenames) > 0
     if any(c.endswith('.iff') for c in component_filenames):
-        # We can't use ``djvm -c``.
+        # We can't use `djvm -c`.
         return bundle_djvu_via_indirect(*component_filenames)
     else:
         djvu_file = temporary.file(suffix='.djvu')
         args = ['djvm', '-c', djvu_file.name]
         args += component_filenames
         return utils.Proxy(djvu_file, ipc.Subprocess(args).wait, None)
+
 
 def require_cli():
     ipc.require(
@@ -335,7 +337,9 @@ def require_cli():
         'djvmcvt',
     )
 
-_page_id_chars = re.compile('^[A-Za-z0-9_+.-]*$').match
+
+_page_id_chars = re.compile(r'^[A-Za-z\d_+.-]*$').match
+
 
 def validate_page_id(page_id):
     if not _page_id_chars(page_id):
@@ -349,6 +353,7 @@ def validate_page_id(page_id):
         return page_id
     else:
         raise ValueError('page identifier must end with the .djvu extension')
+
 
 __all__ = [
     'bitonal_to_djvu', 'photo_to_djvu', 'djvu_to_iw44',

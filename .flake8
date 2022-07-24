@@ -1,0 +1,13 @@
+[flake8]
+ignore =
+exclude =
+    # Git.
+    .git,
+    # Python cache.
+    __pycache__,
+    # Build directories.
+    build,
+    dist,
+    # IDEs.
+    .idea,
+max-line-length = 140

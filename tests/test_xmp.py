@@ -132,7 +132,7 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
             with temporary.file(mode='w+t') as xmp_file:
                 exception = None
                 try:
-                    meta = xmp.metadata(backend=backend)
+                    meta = xmp.metadata(backend_module=backend)
                     meta.write(xmp_file)
                     xmp_file.flush()
                     xmp_file.seek(0)
@@ -196,7 +196,7 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
             with temporary.file(mode='w+t') as xmp_file:
                 exception = None
                 try:
-                    meta = xmp.metadata(backend=backend)
+                    meta = xmp.metadata(backend_module=backend)
                     meta.update(
                         media_type='image/x-test',
                         internal_properties=[
@@ -307,7 +307,7 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
             with temporary.file(mode='w+t') as xmp_file:
                 exception = None
                 try:
-                    meta = xmp.metadata(backend=backend)
+                    meta = xmp.metadata(backend_module=backend)
                     meta.import_(image_path)
                     meta.update(
                         media_type='image/x-test',
@@ -460,13 +460,13 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
 
     def _test_io_error(self, backend):
         image_path = self.get_data_file('nonexistent.png')
-        meta = xmp.metadata(backend=backend)
+        meta = xmp.metadata(backend_module=backend)
         meta.import_(image_path)
         with temporary.directory() as tmpdir:
             os.chmod(tmpdir, 0o000)
             try:
                 image_path = os.path.join(tmpdir, 'example.png')
-                meta = xmp.metadata(backend=backend)
+                meta = xmp.metadata(backend_module=backend)
                 with self.assertRaises(expected_exception=IOError):
                     meta.import_(image_path)
             finally:

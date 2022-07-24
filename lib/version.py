@@ -13,27 +13,27 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''
+"""
 didjvu version information
-'''
-
-
+"""
 
 import argparse
 import sys
 
 __version__ = '0.9.1'
 
+
 def get_software_agent():
     import gamera
-    result = 'didjvu ' + __version__
-    result += ' (Gamera {0})'.format(gamera.__version__)
+    result = f'didjvu {__version__}'
+    result += f' (Gamera {gamera.__version__})'
     return result
 
+
 class VersionAction(argparse.Action):
-    '''
+    """
     argparse --version action
-    '''
+    """
 
     def __init__(self, option_strings, dest=argparse.SUPPRESS):
         super(VersionAction, self).__init__(
@@ -44,21 +44,27 @@ class VersionAction(argparse.Action):
         )
 
     def __call__(self, parser, namespace, values, option_string=None):
-        print('{prog} {0}'.format(__version__, prog=parser.prog))
-        print('+ Python {0}.{1}.{2}'.format(*sys.version_info))
-        from . import gamera_support as gs
-        print('+ Gamera {0}'.format(gs.gamera.__version__))
+        print(f'{parser.prog} {__version__}')
+        python_version = sys.version_info
+        print(f'+ Python {python_version.major}.{python_version.minor}.{python_version.micro}')
+
+        from lib import gamera_support
+        print(f'+ Gamera {gamera_support.gamera.__version__}')
         pil_name = 'Pillow'
         try:
-            pil_version = gs.PIL.PILLOW_VERSION
+            # noinspection PyUnresolvedReferences
+            pil_version = gamera_support.PILImage.PILLOW_VERSION
         except AttributeError:
             try:
-                pil_version = gs.PIL.__version__
+                # noinspection PyUnresolvedReferences
+                pil_version = gamera_support.PILImage.__version__
             except AttributeError:
                 pil_name = 'PIL'
-                pil_version = gs.PIL.VERSION
-        print('+ {PIL} {0}'.format(pil_version, PIL=pil_name))
+                # noinspection PyUnresolvedReferences
+                pil_version = gamera_support.PILImage.VERSION
+        print(f'+ {pil_name} {pil_version}')
         parser.exit()
+
 
 __all__ = [
     'VersionAction',

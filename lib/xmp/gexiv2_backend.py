@@ -13,35 +13,41 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''XMP support (GExiv2 backend)'''
+"""
+XMP support (GExiv2 backend)
+"""
 
 import re
 
+# noinspection PyUnresolvedReferences
 import gi
 try:
     gi.require_version('GExiv2', '0.10')
-except ValueError as exc:  # no coverage
-    raise ImportError(exc)
+except ValueError as exception:  # no coverage
+    raise ImportError(exception)
+# noinspection PyUnresolvedReferences
 from gi.repository import GExiv2
 if GExiv2.get_version() < 1003:
     raise ImportError('GExiv2 >= 0.10.3 is required')  # no coverage
 
-from .. import temporary
-from .. import timestamp
+from lib import temporary
+from lib import timestamp
 
-from . import namespaces as ns
+from lib.xmp import namespaces
 
-GExiv2.Metadata.register_xmp_namespace(ns.didjvu, 'didjvu')
+
+GExiv2.Metadata.register_xmp_namespace(namespaces.didjvu, 'didjvu')
+
 
 class XmpError(RuntimeError):
     pass
 
-class MetadataBase(object):
 
+class MetadataBase:
     _empty_xmp = (
-        '<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="{ns.rdf}">'
-        '<rdf:RDF/>'
-        '</x:xmpmeta>'.format(ns=ns)
+        f'<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="{namespaces.rdf}">'
+        f'<rdf:RDF/>'
+        f'</x:xmpmeta>'
     )
 
     def _read_data(self, data):
@@ -64,9 +70,9 @@ class MetadataBase(object):
             return fallback
 
     def __getitem__(self, key):
-        value = self._meta.get_tag_string('Xmp.' + key)
+        value = self._meta.get_tag_string(f'Xmp.{key}')
         if value is None:
-            raise KeyError('Xmp.' + key)
+            raise KeyError(f'Xmp.{key}')
         return value
 
     def __setitem__(self, key, value):
@@ -74,16 +80,16 @@ class MetadataBase(object):
             value = str(value)
         elif key.startswith('didjvu.'):
             value = str(value)
-        self._meta.set_tag_string('Xmp.' + key, value)
+        self._meta.set_tag_string(f'Xmp.{key}', value)
 
     def _add_to_history(self, event, index):
         for key, value in event.items:
             if value is None:
                 continue
-            self['xmpMM.History[{i}]/stEvt:{key}'.format(i=index, key=key)] = value
+            self[f'xmpMM.History[{index}]/stEvt:{key}'] = value
 
     def append_to_history(self, event):
-        regexp = re.compile(r'^Xmp[.]xmpMM[.]History\[([0-9]+)\]/')
+        regexp = re.compile(r'^Xmp[.]xmpMM[.]History\[(\d+)\]/')
         n = 0
         for key in self._meta.get_xmp_tags():
             match = regexp.match(key)
@@ -103,9 +109,10 @@ class MetadataBase(object):
             ) or self._empty_xmp
         )
 
-    def read(self, file):
-        data = file.read()
+    def read(self, fp):
+        data = fp.read()
         self._read_data(data)
+
 
 __all__ = ['MetadataBase']
 

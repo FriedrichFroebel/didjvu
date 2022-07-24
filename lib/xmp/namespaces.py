@@ -13,9 +13,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''
-constants for various XML namespaces
-'''
+"""
+Constants for various XML namespaces
+"""
 
 didjvu = 'http://jwilk.net/software/didjvu#'
 

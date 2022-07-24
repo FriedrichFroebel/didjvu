@@ -13,55 +13,60 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''
-timestamps
-'''
+"""
+Timestamps.
+"""
 
 import time
 import datetime
 
-class Timestamp(object):
 
-    def __init__(self, unixtime):
-        self._localtime = time.localtime(unixtime)
-        self._tzdelta = (
-            datetime.datetime.fromtimestamp(unixtime) -
-            datetime.datetime.utcfromtimestamp(unixtime)
-        )
+class Timestamp:
+    def __init__(self, unix_time):
+        self._localtime = time.localtime(unix_time)
+        self._timezone_delta = datetime.datetime.fromtimestamp(unix_time) - datetime.datetime.utcfromtimestamp(unix_time)
 
     def _str(self):
         return time.strftime('%Y-%m-%dT%H:%M:%S', self._localtime)
 
-    def _str_tz(self):
-        offset = self._tzdelta.days * 3600 * 24 + self._tzdelta.seconds
+    def _str_timezone(self):
+        offset = self._timezone_delta.days * 3600 * 24 + self._timezone_delta.seconds
         if offset == 0:
             # Apparently, pyexiv2 automatically converts 00:00 offsets to “Z”.
             # Let's always use “Z” for consistency.
             return 'Z'
         hours, minutes = divmod(abs(offset) // 60, 60)
         sign = '+' if offset >= 0 else '-'
-        return '{s}{h:02}:{m:02}'.format(s=sign, h=hours, m=minutes)
+        return f'{sign}{hours:02}:{minutes:02}'
 
     def __str__(self):
-        '''Format the timestamp object in accordance with RFC 3339.'''
-        return self._str() + self._str_tz()
+        """
+        Format the timestamp object in accordance with RFC 3339.
+        """
+        return self._str() + self._str_timezone()
 
     def as_datetime(self, cls=datetime.datetime):
-        tzdelta = self._tzdelta
-        class tz(datetime.tzinfo):
+        timezone_delta = self._timezone_delta
+
+        class Timezone(datetime.tzinfo):
             def utcoffset(self, dt):
                 del dt
-                return tzdelta
+                return timezone_delta
+
             def dst(self, dt):
                 del dt
                 return datetime.timedelta(0)
+
             def tzname(self, dt):
                 del dt
                 return
-        return cls(*self._localtime[:6], tzinfo=tz())
+
+        return cls(*self._localtime[:6], tzinfo=Timezone())
+
 
 def now():
     return Timestamp(time.time())
+
 
 __all__ = ['Timestamp', 'now']
 

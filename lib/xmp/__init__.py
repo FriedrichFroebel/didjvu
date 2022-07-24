@@ -13,50 +13,62 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''XMP support'''
+"""
+XMP support
+"""
 
 import errno
 import uuid
 
-from .. import timestamp
-from .. import version
+from lib import timestamp
+from lib import version
 
-import_error = None
-backend = None
 
-try:
-    from . import gexiv2_backend as backend
-except ImportError as import_error:  # no coverage
-    pass
-
-if backend is None:  # no coverage
+def load_backend():
     try:
-        from . import libxmp_backend as backend
-    except ImportError:
+        # noinspection PyUnresolvedReferences
+        from lib.xmp import gexiv2_backend
+        return gexiv2_backend, None
+    except ImportError as _error:  # no coverage
+        error = _error
+
+    try:
+        # noinspection PyUnresolvedReferences
+        from lib.xmp import libxmp_backend
+        return libxmp_backend, error
+    except ImportError:  # no coverage
         pass
 
-if backend is None:  # no coverage
     try:
-        from . import pyexiv2_backend as backend
-    except ImportError:
+        # noinspection PyUnresolvedReferences
+        from lib.xmp import pyexiv2_backend
+        return pyexiv2_backend, error
+    except ImportError:  # no coverage
         pass
+
+    return None, error
+
+
+backend, import_error = load_backend()
+
 
 def gen_uuid():
-    '''
-    generate a UUID URN, in accordance with RFC 4122
-    '''
+    """
+    Generate a UUID URN, in accordance with RFC 4122.
+    """
     # https://tools.ietf.org/html/rfc4122#section-3
-    return 'urn:uuid:{uuid}'.format(uuid=uuid.uuid4())
+    return f'urn:uuid:{uuid.uuid4()}'
 
-class Event(object):
 
-    def __init__(self,
-        action=None,
-        software_agent=None,
-        parameters=None,
-        instance_id=None,
-        changed=None,
-        when=None,
+class Event:
+    def __init__(
+            self,
+            action=None,
+            software_agent=None,
+            parameters=None,
+            instance_id=None,
+            changed=None,
+            when=None,
     ):
         if software_agent is None:
             software_agent = version.get_software_agent()
@@ -73,11 +85,11 @@ class Event(object):
     def items(self):
         return iter(self._items)
 
-def metadata(backend=backend):
 
-    class Metadata(backend.MetadataBase):
-
-        def update(self, media_type, internal_properties=()):
+def metadata(backend_module=backend):
+    class Metadata(backend_module.MetadataBase):
+        def update(self, media_type, internal_properties=None):
+            internal_properties = internal_properties or tuple()
             instance_id = gen_uuid()
             document_id = gen_uuid()
             now = timestamp.now()
@@ -85,9 +97,9 @@ def metadata(backend=backend):
             # TODO: try to guess original media type
             self['dc.format'] = media_type
             if original_media_type is not None:
-                event_params = 'from {0} to {1}'.format(original_media_type, media_type)
+                event_params = f'from {original_media_type} to {media_type}'
             else:
-                event_params = 'to {0}'.format(media_type)
+                event_params = f'to {media_type}'
             self['xmp.ModifyDate'] = now
             self['xmp.MetadataDate'] = now
             self['xmpMM.InstanceID'] = instance_id
@@ -108,25 +120,26 @@ def metadata(backend=backend):
                 when=now,
             )
             self.append_to_history(event)
-            for k, v in internal_properties:
-                self['didjvu.' + k] = v
+            for key, value in internal_properties:
+                self[f'didjvu.{key}'] = value
 
         def import_(self, image_filename):
             try:
-                file = open(image_filename + '.xmp', 'rt')
-            except (OSError, IOError) as ex:
-                if ex.errno == errno.ENOENT:
+                fp = open(f'{image_filename}.xmp', 'rt')
+            except (OSError, IOError) as exception:
+                if exception.errno == errno.ENOENT:
                     return
                 raise
             try:
-                self.read(file)
+                self.read(fp)
             finally:
-                file.close()
+                fp.close()
 
-        def write(self, file):
-            file.write(self.serialize())
+        def write(self, fp):
+            fp.write(self.serialize())
 
     return Metadata()
+
 
 __all__ = [
     'backend',

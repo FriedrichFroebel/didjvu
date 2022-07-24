@@ -13,47 +13,60 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''XMP support (pyexiv2 backend)'''
+"""
+XMP support (pyexiv2 backend)
+"""
 
 import datetime
 import itertools
 import sys
-import xml.etree.cElementTree as etree
+from xml.etree import ElementTree
 
 import pyexiv2.xmp
 
-from .. import temporary
-from .. import timestamp
+from lib import temporary
+from lib import timestamp
 
-from . import namespaces as ns
+from lib.xmp import namespaces
+
 
 def xmp_register_namespace(prefix, uri):
-    # work-around for <https://bugs.debian.org/662878>
-    class fool_pyexiv2(str):
+    # Work-around for <https://bugs.debian.org/662878>
+
+    class Namespace(str):
         def endswith(self, suffix, *args, **kwargs):
             return True
     try:
-        pyexiv2.xmp.register_namespace(fool_pyexiv2(uri), prefix)
+        pyexiv2.xmp.register_namespace(Namespace(uri), prefix)
     except KeyError:
         if 'gi.repository.GExiv2' in sys.modules:
-            # most likely the namespace was registered by the GExiv2 backend
+            # Most likely the namespace was registered by the GExiv2 backend.
             pass
         else:  # no coverage
             raise
-xmp_register_namespace('didjvu', ns.didjvu)
 
-etree.register_namespace('x', 'adobe:ns:meta/')
+
+xmp_register_namespace('didjvu', namespaces.didjvu)
+ElementTree.register_namespace('x', 'adobe:ns:meta/')
+
 
 class XmpError(RuntimeError):
     pass
 
-class datetime_for_pyexiv2(datetime.datetime):
 
-    __almost_zero = 1.0
-    while __almost_zero / 2 > 0:
-        __almost_zero /= 2
+def _get_almost_zero_value():
+    value = 1.0
+    while value / 2 > 0:
+        value /= 2
+    return value
 
-    def __init__(self, year, month, day, hour, minute, second, microsecond=0, tzinfo=None):
+
+class DatetimeForPyexiv2(datetime.datetime):
+    __almost_zero = _get_almost_zero_value()
+
+    def __init__(
+            self, year, month, day, hour, minute, second, microsecond=0, tzinfo=None
+    ):
         datetime.datetime.__init__(self)
         self.__second = second
 
@@ -63,11 +76,12 @@ class datetime_for_pyexiv2(datetime.datetime):
         # Let's fool it into thinking it's always non-zero.
         return self.__second or self.__almost_zero
 
-def nstag(ns, tag):
-    return '{{{ns}}}{tag}'.format(ns=ns, tag=tag)
 
-class MetadataBase(object):
+def namespace_tag(namespace, tag):
+    return f'{{{namespace}}}{tag}'
 
+
+class MetadataBase:
     def _reload(self):
         fp = self._fp
         fp.flush()
@@ -85,19 +99,19 @@ class MetadataBase(object):
         self._meta.write()
         fp = self._fp
         fp.seek(0)
-        xmp = etree.parse(fp)
+        xmp = ElementTree.parse(fp)
         description = None
         try:
             xmp_find = xmp.iterfind
         except AttributeError:  # no coverage
             # Python 2.6
             xmp_find = xmp.findall
-        for description in xmp_find('.//' + nstag(ns.rdf, 'Description')):
+        for description in xmp_find('.//' + namespace_tag(namespaces.rdf, 'Description')):
             pass
         if description is None:
             raise XmpError('Cannot add xmpMM:History')  # no coverage
-        e_description = etree.SubElement(description, nstag(ns.xmpmm, 'History'))
-        etree.SubElement(e_description, nstag(ns.rdf, 'Seq'))
+        description_element = ElementTree.SubElement(description, namespace_tag(namespaces.xmpmm, 'History'))
+        ElementTree.SubElement(description_element, namespace_tag(namespaces.rdf, 'Seq'))
         fp.seek(0)
         fp.truncate()
         xmp.write(fp, encoding='UTF-8')
@@ -112,9 +126,9 @@ class MetadataBase(object):
     def __init__(self):
         self._fp = fp = temporary.file(suffix='.xmp')
         fp.write(
-            '<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="{ns.rdf}">'
+            f'<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="{namespaces.rdf}">'
             '<rdf:RDF/>'
-            '</x:xmpmeta>'.format(ns=ns).encode('utf-8')
+            '</x:xmpmeta>'.encode('utf-8')
         )
         self._reload()
 
@@ -133,7 +147,7 @@ class MetadataBase(object):
             return fallback
 
     def __getitem__(self, key):
-        tag = self._meta['Xmp.' + key]
+        tag = self._meta[f'Xmp.{key}']
         if tag.type == 'MIMEType':
             value = tag.raw_value
         else:
@@ -142,26 +156,28 @@ class MetadataBase(object):
 
     def __setitem__(self, key, value):
         if isinstance(value, timestamp.Timestamp):
-            value = value.as_datetime(cls=datetime_for_pyexiv2)
+            value = value.as_datetime(cls=DatetimeForPyexiv2)
         elif key.startswith('didjvu.'):
             value = str(value)
-        #elif key == 'dc.format' and isinstance(value, str):
-            #value = tuple(value.split('/', 1))
-        self._meta['Xmp.' + key] = value
+        # elif key == 'dc.format' and isinstance(value, str):
+            # value = tuple(value.split('/', 1))
+        self._meta[f'Xmp.{key}'] = value
 
     def _add_to_history(self, event, index):
         for key, value in event.items:
             if value is None:
                 continue
-            self['xmpMM.History[{i}]/stEvt:{key}'.format(i=index, key=key)] = value
+            self[f'xmpMM.History[{index}]/stEvt:{key}'] = value
 
     def append_to_history(self, event):
         self._add_history()
         keys = self._meta.xmp_keys
+        i = -1
         for i in itertools.count(1):
-            key = 'Xmp.xmpMM.History[{i}]'.format(i=i)
+            key = f'Xmp.xmpMM.History[{i}]'
             if key not in keys:
                 break
+        assert i >= 0
         return self._add_to_history(event, i)
 
     def serialize(self):
@@ -177,6 +193,7 @@ class MetadataBase(object):
         fp.truncate()
         fp.write(data.encode('utf-8'))
         self._reload()
+
 
 __all__ = ['MetadataBase']
 

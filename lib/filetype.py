@@ -13,39 +13,43 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''
-filetype detection
-'''
+"""
+Filetype detection
+"""
 
-class generic(object):
 
-    def __new__(self, *args, **kwargs):
+class Generic:
+    def __new__(cls, *args, **kwargs):
         raise NotImplementedError  # no coverage
 
     @classmethod
     def like(cls, other):
         return issubclass(cls, other)
 
-class djvu(generic):
+
+class Djvu(Generic):
     pass
 
-class djvu_single(djvu):
+
+class DjvuSingle(Djvu):
     pass
+
 
 def check(filename):
-    cls = generic
+    cls = Generic
     with open(filename, 'rb') as file:
         header = file.read(16)
         if header.startswith(b'AT&TFORM'):
-            cls = djvu
+            cls = Djvu
             if header.endswith(b'DJVU'):
-                cls = djvu_single
+                cls = DjvuSingle
     return cls
+
 
 __all__ = [
     'check',
-    'djvu',
-    'djvu_single',
+    'Djvu',
+    'DjvuSingle',
 ]
 
 # vim:ts=4 sts=4 sw=4 et

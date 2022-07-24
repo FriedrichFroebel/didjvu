@@ -37,7 +37,7 @@ class CopyFileTestCase(TestCase):
 
         data = 'eggs' + 'spam' * 42
         with self.subTest(data=data):
-            with mock.patch.object(fs, '_block_size', 1):
+            with mock.patch.object(fs, '_BLOCK_SIZE', 1):
                 self._test_copy_file(data)
 
 

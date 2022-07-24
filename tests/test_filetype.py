@@ -24,13 +24,13 @@ class FileTypeTestCase(TestCase):
     def test_djvu(self):
         path = self.get_data_file('ycbcr.djvu')
         file_type = filetype.check(path)
-        self.assertTrue(file_type.like(filetype.djvu))
-        self.assertTrue(file_type.like(filetype.djvu_single))
+        self.assertTrue(file_type.like(filetype.Djvu))
+        self.assertTrue(file_type.like(filetype.DjvuSingle))
 
     def test_bad(self):
         path = self.get_data_file(os.devnull)
         file_type = filetype.check(path)
-        self.assertFalse(file_type.like(filetype.djvu))
-        self.assertFalse(file_type.like(filetype.djvu_single))
+        self.assertFalse(file_type.like(filetype.Djvu))
+        self.assertFalse(file_type.like(filetype.DjvuSingle))
 
 # vim:ts=4 sts=4 sw=4 et

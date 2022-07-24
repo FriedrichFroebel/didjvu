@@ -13,7 +13,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''temporary files and directories'''
+"""
+Temporary files and directories
+"""
 
 import contextlib
 import functools
@@ -24,13 +26,17 @@ import tempfile
 file = functools.partial(tempfile.NamedTemporaryFile, prefix='didjvu.')
 name = functools.partial(tempfile.mktemp, prefix='didjvu.')
 
+
+# noinspection PyShadowingBuiltins
 def hardlink(path, suffix='', prefix='didjvu.', dir=None):
     new_path = name(suffix=suffix, prefix=prefix, dir=dir)
     os.link(path, new_path)
+    # noinspection PyUnresolvedReferences,PyProtectedMember
     return tempfile._TemporaryFileWrapper(
         open(new_path, 'r+b'),
         new_path
     )
+
 
 @contextlib.contextmanager
 def directory(*args, **kwargs):
@@ -41,6 +47,7 @@ def directory(*args, **kwargs):
         yield tmpdir
     finally:
         shutil.rmtree(tmpdir)
+
 
 __all__ = [
     'directory',

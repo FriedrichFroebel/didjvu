@@ -126,7 +126,7 @@ class SliceRepresentationTestCase(TestCase):
 class IntactTestCase(TestCase):
     def test_intact(self):
         x = object()
-        intact_x = cli.intact(x)
+        intact_x = cli.Intact(x)
         self.assertIs(intact_x(), x)
 
 
@@ -172,7 +172,7 @@ class ArgumentParserTestCase(TestCase):
                 contextlib.redirect_stdout(stdout):
             parser = cli.ArgumentParser(self.methods, 'djvu')
             with self.assertRaises(expected_exception=SystemExit) as exception_manager:
-                parser.parse_args(dict())
+                parser.parse_arguments(dict())
             self.assertEqual(exception_manager.exception.args, (2,))
 
         actions = ','.join(self.action_names)
@@ -190,7 +190,7 @@ class ArgumentParserTestCase(TestCase):
                 contextlib.redirect_stderr(stderr):
             parser = cli.ArgumentParser(self.methods, 'djvu')
             with self.assertRaises(expected_exception=SystemExit) as exception_manager:
-                parser.parse_args(dict())
+                parser.parse_arguments(dict())
             self.assertEqual(exception_manager.exception.args, (2,))
         self.assertRegex(
             stderr.getvalue(),
@@ -215,7 +215,7 @@ class ArgumentParserTestCase(TestCase):
                 contextlib.redirect_stderr(stderr):
             parser = cli.ArgumentParser(self.methods, 'djvu')
             with self.assertRaises(expected_exception=SystemExit) as exception_manager:
-                parser.parse_args(dict())
+                parser.parse_arguments(dict())
             self.assertEqual(exception_manager.exception.args, (2,))
         action_values = ','.join(self.action_names)
         action_strings = ', '.join(map(repr, self.action_names))
@@ -242,7 +242,7 @@ class ArgumentParserTestCase(TestCase):
         argv += args
         with mock.patch('sys.argv', argv), contextlib.redirect_stderr(stderr):
             parser = cli.ArgumentParser(self.methods, 'djvu')
-            selected_action, options = parser.parse_args(self.actions)
+            selected_action, options = parser.parse_arguments(self.actions)
         self.assertMultiLineEqual(stderr.getvalue(), '')
         self.assertEqual(selected_action, action)
         return options
@@ -262,7 +262,7 @@ class ArgumentParserTestCase(TestCase):
         self.assertEqual(options.loss_level, 0)
         self.assertEqual(options.pages_per_dict, 1)
         self.assertIs(options.method, self.methods['djvu'])
-        self.assertEqual(options.params, {})
+        self.assertEqual(options.parameters, {})
         self.assertEqual(options.verbosity, 1)
         self.assertIs(options.xmp, False)
 
@@ -280,7 +280,7 @@ class ArgumentParserTestCase(TestCase):
         with mock.patch('sys.argv', argv), contextlib.redirect_stdout(stdout):
             parser = cli.ArgumentParser(self.methods, 'djvu')
             with self.assertRaises(expected_exception=SystemExit) as exception_manager:
-                parser.parse_args(dict())
+                parser.parse_arguments(dict())
             self.assertEqual(exception_manager.exception.args, (0,))
         self.assertGreater(len(stdout.getvalue()), 0)
 

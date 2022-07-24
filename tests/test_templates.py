@@ -30,7 +30,7 @@ class TemplatesTestCase(TestCase):
         self.assertEqual(result, '/path/to/eggs.djvu')
         result = templates.expand('{base-ext}.djvu', path, 0, memo)
         self.assertEqual(result, 'eggs.djvu')
-    
+
     def test_page(self):
         path = '/path/to/eggs.png'
         memo = {}
@@ -44,25 +44,25 @@ class TemplatesTestCase(TestCase):
         self.assertEqual(result, '69')
         result = templates.expand('{page-26}', path, 42, memo)
         self.assertEqual(result, '17')
-    
+
     def test_bad_offset(self):
         path = '/path/to/eggs.png'
         with self.assertRaises(expected_exception=KeyError) as exception_manager:
             templates.expand('{page+ham}', path, 42, {})
         self.assertEqual(exception_manager.exception.args, ('page+ham',))
-    
+
     def test_bad_type_offset(self):
         path = '/path/to/eggs.png'
         with self.assertRaises(expected_exception=KeyError) as exception_manager:
             templates.expand('{base-37}', path, 42, {})
         self.assertEqual(exception_manager.exception.args, ('base-37',))
-    
+
     def test_bad_var_offset(self):
         path = '/path/to/eggs.png'
         with self.assertRaises(expected_exception=KeyError) as exception_manager:
             templates.expand('{eggs-37}', path, 42, {})
         self.assertEqual(exception_manager.exception.args, ('eggs-37',))
-    
+
     def test_multi_offset(self):
         path = '/path/to/eggs.png'
         with self.assertRaises(expected_exception=KeyError) as exception_manager:
@@ -71,7 +71,7 @@ class TemplatesTestCase(TestCase):
         with self.assertRaises(expected_exception=KeyError) as exception_manager:
             templates.expand('{eggs-bacon-ham}', path, 42, {})
         self.assertEqual(exception_manager.exception.args, ('eggs-bacon-ham',))
-    
+
     def test_duplicates(self):
         path = '/path/to/eggs.png'
         memo = {}

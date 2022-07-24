@@ -131,11 +131,10 @@ jobs:
       run: |
         python -m pip install coverage
         make update-coverage
-    # Does not work correctly with `py3exiv2` installed for now.
-    #- name: run pyflakes
-      #run: |
-        #python -m pip install pyflakes
-        #python -m pyflakes .
+    - name: run flake8
+      run: |
+        python -m pip install flake8 pep8-naming
+        python -m flake8 .
     - name: check docs
       run: |
         python -m pip install docutils pygments

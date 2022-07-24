@@ -167,16 +167,27 @@ class BundleDjvuViaIndirectTestCase(TestCase):
     def test_string_versus_bytes_issue(self):
         # Simplify the test by mocking away the subprocess communication which does
         # not directly influence the error.
-        # `__del__` needs to be patched to work around the wrong
-        #   ResourceWarning: subprocess 42 is still running
-        # warnings which are not relevant here as we are not executing any subprocesses
-        # at all.
-        with mock.patch.object(djvu.ipc.Subprocess, 'wait'), \
-                mock.patch.object(djvu.ipc.Subprocess, '__del__'):
+        outer_self = self
+        self._wait_called = []
+
+        class DummySubprocess(djvu.ipc.Subprocess):
+            # noinspection PyMissingConstructor
+            def __init__(self, *args, **kwargs):
+                # Just creating a Subprocess instance seems to run some stuff already,
+                # which finally leads to some warning from `djvmcvt`:
+                #   DjVuDocument.fail_URL	file://localhost/tmp/didjvu.imd61jfy/didjvu.uli33b_2djvu
+                # For this reason, the `super()` call is being omitted here.
+                self.stdin = io.BytesIO()
+
+            def wait(self, timeout=None):
+                outer_self._wait_called.append(self)
+
+        with mock.patch.object(djvu.ipc, 'Subprocess', DummySubprocess):
             djvu_path = djvu.bundle_djvu_via_indirect(
                 *[self.get_data_file('onebit.png')]
             )
             self.assertTrue(os.path.exists(djvu_path.name))
+            self.assertEqual(2, len(self._wait_called))
 
 
 # vim:ts=4 sts=4 sw=4 et

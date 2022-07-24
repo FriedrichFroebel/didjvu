@@ -13,7 +13,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''bridge to the Gamera framework'''
+"""
+Bridge to the Gamera framework
+"""
 
 import collections
 import ctypes
@@ -21,12 +23,13 @@ import math
 import re
 import sys
 
-from . import utils
+from lib import utils
 
 try:
-    from PIL import Image as PIL
-except ImportError as ex:  # no coverage
-    utils.enhance_import_error(ex,
+    from PIL import Image as PILImage
+except ImportError as _exception:  # no coverage
+    utils.enhance_import_error(
+        _exception,
         'Pillow',
         'python3-pil',
         'https://pypi.org/project/Pillow/'
@@ -35,8 +38,9 @@ except ImportError as ex:  # no coverage
 
 try:
     import gamera
-except ImportError as ex:  # no coverage
-    utils.enhance_import_error(ex,
+except ImportError as _exception:  # no coverage
+    utils.enhance_import_error(
+        _exception,
         'Gamera',
         '',
         'https://github.com/hsnr-gamera/gamera-4'
@@ -44,26 +48,28 @@ except ImportError as ex:  # no coverage
     raise
 del gamera  # quieten pyflakes
 
-from gamera import __version__ as version
-from gamera.core import load_image as _load_image
-from gamera.core import init_gamera as _init
-from gamera.core import Image, RGB, GREYSCALE, ONEBIT, Point, Dim, RGBPixel
-from gamera.plugins.pil_io import from_pil as _from_pil
-import gamera.args
 
-def has_version(*req_version):
-    return tuple(map(int, version.split('.'))) >= req_version
+from gamera import __version__ as version  # noqa: E402
+from gamera.core import load_image as _load_image  # noqa: E402
+from gamera.core import init_gamera as _init  # noqa: E402
+from gamera.core import Image, RGB, GREYSCALE, ONEBIT, Point, Dim, RGBPixel  # noqa: E402
+from gamera.plugins.pil_io import from_pil as _from_pil  # noqa: E402
+import gamera.args  # noqa: E402
+
+
+def has_version(*required_version):
+    return tuple(map(int, version.split('.'))) >= required_version
+
 
 def load_image(filename):
-    pil_image = PIL.open(filename)
-    [xdpi, ydpi] = pil_image.info.get('dpi', (0, 0))
-    if xdpi <= 1 or ydpi <= 1:
-        # not reliable
+    pil_image = PILImage.open(filename)
+    dpi_x, dpi_y = pil_image.info.get('dpi', (0, 0))
+    if dpi_x <= 1 or dpi_y <= 1:
+        # Not reliable
         dpi = None
     else:
         dpi = int(round(
-            math.hypot(xdpi, ydpi) /
-            math.hypot(1, 1)
+            math.hypot(dpi_x, dpi_y) / math.hypot(1, 1)
         ))
     try:
         if pil_image.format == 'TIFF':
@@ -78,23 +84,24 @@ def load_image(filename):
             gamera_modes = []
         if pil_image.mode not in gamera_modes:
             raise IOError
-        # Gamera supports more TIFF compression formats that PIL.
+        # Gamera supports more TIFF compression formats that PILImage.
         # https://mail.python.org/pipermail/image-sig/2003-July/002354.html
         image = _load_image(filename)
     except IOError:
-        # Gamera supports importing only 8-bit and RGB from PIL:
+        # Gamera supports importing only 8-bit and RGB from PILImage:
         if pil_image.mode[:2] in {'1', '1;', 'I', 'I;', 'L;'}:
             pil_image = pil_image.convert('L')
         elif pil_image.mode not in {'RGB', 'L'}:
             pil_image = pil_image.convert('RGB')
         assert pil_image.mode in {'RGB', 'L'}
+        # noinspection PyArgumentList
         image = _from_pil(pil_image)
     image.dpi = dpi
     pil_image.close()
     return image
 
-class Argument(object):
 
+class Argument:
     _type_map = {
         gamera.args.Int: int,
         gamera.args.Real: float,
@@ -108,11 +115,9 @@ class Argument(object):
                 self.type = ptype
                 break
         else:
-            raise NotImplementedError(
-                'argument {0}: unsupported type {1!r}'.format(self.name, arg)
-            )  # no coverage
+            raise NotImplementedError(f'argument {self.name}: unsupported type {arg!r}')  # no coverage
         if self.type in {int, float}:
-            [self.min, self.max] = arg.rng
+            self.min, self.max = arg.rng
             if self.min == -gamera.args.DEFAULT_MAX_ARG_NUMBER:
                 self.min = None
             if self.max == gamera.args.DEFAULT_MAX_ARG_NUMBER:
@@ -126,13 +131,13 @@ class Argument(object):
         elif self.has_default:
             if not isinstance(self.default, self.type):
                 raise TypeError(
-                    'argument {0}: type({1!r}) should be {2}'.format(self.name, self.default, self.type.__name__)
+                    f'argument {self.name}: type({self.default!r}) should be {self.type.__name__}'
                 )  # no coverage
         else:
             self.default = None
 
-class Plugin(object):
 
+class Plugin:
     def __init__(self, plugin, name):
         self._plugin = plugin
         self._pixel_types = plugin.self_type.pixel_types
@@ -159,16 +164,19 @@ class Plugin(object):
                 image = image.to_greyscale()
             else:
                 raise NotImplementedError(
-                    'method {method} does not support pixel type {pt}'.format(method=self.name, pt=image.pixel_type_name)
+                    f'method {self.name} does not support pixel type {image.pixel_type_name}'
                 )  # no coverage
         assert image.data.pixel_type in pixel_types
         if self._method is None:
             self._method = self._plugin()
         return self._method(image, **kwargs)
 
+
 def _load_methods():
-    replace_suffix = re.compile('_threshold$').sub
-    class _methods(object):
+    replace_suffix = re.compile(r'_threshold$').sub
+
+    # noinspection PyUnresolvedReferences
+    class MethodsContainer:
         from gamera.plugins.threshold import abutaleb_threshold
         from gamera.plugins.threshold import bernsen_threshold
         from gamera.plugins.threshold import djvu_threshold
@@ -181,34 +189,40 @@ def _load_methods():
         from gamera.plugins.binarization import sauvola_threshold
         from gamera.plugins.binarization import shading_subtraction
         from gamera.plugins.binarization import white_rohrer_threshold
-    methods = {}
-    for name, plugin in vars(_methods).items():
+
+    method_mapping = dict()
+    for name, plugin in vars(MethodsContainer).items():
         if name.startswith('_'):
             continue
         name = replace_suffix('', name)
         name = name.replace('_', '-')
         method = Plugin(plugin, name)
-        methods[name] = method
-    return methods
+        method_mapping[name] = method
+    return method_mapping
+
 
 methods = _load_methods()
+
 
 def to_pil_rgb(image):
     # About 20% faster than the standard .to_pil() method of Gamera 3.2.6.
     buffer = ctypes.create_string_buffer(3 * image.ncols * image.nrows)
     image.to_buffer(buffer)
-    return PIL.frombuffer('RGB', (image.ncols, image.nrows), buffer, 'raw', 'RGB', 0, 1)
+    return PILImage.frombuffer('RGB', (image.ncols, image.nrows), buffer, 'raw', 'RGB', 0, 1)
+
 
 def to_pil_1bpp(image):
     if image.data.pixel_type != GREYSCALE:
         image = image.to_greyscale()
     return image.to_pil()
 
+
 def init():
     if not has_version(4, 0):
         raise RuntimeError('Gamera >= 4.0 is required')
     blocked_numpy = False
     if 'numpy' not in sys.modules:
+        # noinspection PyTypeChecker
         sys.modules['numpy'] = None
         blocked_numpy = True
     try:
@@ -217,6 +231,7 @@ def init():
         if blocked_numpy:
             del sys.modules['numpy']
     return result
+
 
 __all__ = [
     # classes:

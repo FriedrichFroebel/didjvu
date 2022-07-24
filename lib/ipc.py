@@ -13,7 +13,9 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-'''interprocess communication'''
+"""
+Interprocess communication
+"""
 
 import errno
 import logging
@@ -22,6 +24,7 @@ import pipes
 import re
 import signal
 import subprocess
+
 
 # CalledProcessError, CalledProcessInterrupted
 # ============================================
@@ -32,12 +35,13 @@ import subprocess
 if os.name == 'posix':
     signal.signal(signal.SIGCHLD, signal.SIG_DFL)
 
+
 def get_signal_names():
-    signame_pattern = re.compile('^SIG[A-Z0-9]*$')
+    signal_name_pattern = re.compile(r'^SIG[A-Z\d]*$')
     data = {
         name: getattr(signal, name)
         for name in dir(signal)
-        if signame_pattern.match(name)
+        if signal_name_pattern.match(name)
     }
     try:
         if data['SIGABRT'] == data['SIGIOT']:
@@ -49,12 +53,13 @@ def get_signal_names():
             del data['SIGCLD']
     except KeyError:  # no coverage
         pass
-    return {no: name for name, no in data.items()}
+    return {number: name for name, number in data.items()}
+
 
 CalledProcessError = subprocess.CalledProcessError
 
-class CalledProcessInterrupted(CalledProcessError):
 
+class CalledProcessInterrupted(CalledProcessError):
     _signal_names = get_signal_names()
 
     def __init__(self, signal_id, command):
@@ -62,9 +67,11 @@ class CalledProcessInterrupted(CalledProcessError):
 
     def __str__(self):
         signal_name = self._signal_names.get(self.args[1], self.args[1])
-        return 'Command {cmd!r} was interrupted by signal {sig}'.format(cmd=self.args[0], sig=signal_name)
+        return f'Command {self.args[0]!r} was interrupted by signal {signal_name}'
+
 
 del get_signal_names
+
 
 # Subprocess
 # ==========
@@ -72,8 +79,8 @@ del get_signal_names
 def shell_escape(commandline):
     return ' '.join(map(pipes.quote, commandline))
 
-class Subprocess(subprocess.Popen):
 
+class Subprocess(subprocess.Popen):
     @classmethod
     def override_env(cls, override):
         env = os.environ
@@ -104,9 +111,10 @@ class Subprocess(subprocess.Popen):
             logger.debug(shell_escape(commandline))
         self.__command = commandline[0]
         try:
+            # noinspection PyArgumentList
             subprocess.Popen.__init__(self, *args, **kwargs)
-        except EnvironmentError as ex:
-            ex.filename = self.__command
+        except EnvironmentError as exception:
+            exception.filename = self.__command
             raise
 
     def wait(self, timeout=None):
@@ -117,10 +125,12 @@ class Subprocess(subprocess.Popen):
             raise CalledProcessInterrupted(-return_code, self.__command)
         return return_code
 
+
 # PIPE
 # ====
 
 PIPE = subprocess.PIPE
+
 
 # require()
 # =========
@@ -133,14 +143,17 @@ def _require(command):
             return
     raise OSError(errno.ENOENT, 'command not found', command)
 
+
 def require(*commands):
     for command in commands:
         _require(command)
+
 
 # logging support
 # ===============
 
 logger = logging.getLogger('didjvu.ipc')
+
 
 # __all__
 # =======
