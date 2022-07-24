@@ -90,6 +90,7 @@ def load_image(filename):
         assert pil_image.mode in {'RGB', 'L'}
         image = _from_pil(pil_image)
     image.dpi = dpi
+    pil_image.close()
     return image
 
 class Argument(object):

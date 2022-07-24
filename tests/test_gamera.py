@@ -56,9 +56,7 @@ class MethodsTestCase(TestCase):
         path = self.get_data_file(filename)
         gamera_support.init()
         in_image = gamera_support.load_image(path)
-        self.addCleanup(in_image.close)
         bin_image = method(in_image, **kwargs)
-        self.addCleanup(bin_image.close)
         self.assertIsInstance(bin_image, gamera_support.Image)
         self.assertEqual(bin_image.data.pixel_type, gamera_support.ONEBIT)
         self.assertEqual(in_image.dim, bin_image.dim)
@@ -89,7 +87,6 @@ class ToPilRgbTestCase(TestCase):
         gamera_support.init()
         gamera_image = gamera_support.load_image(path)
         out_image = gamera_support.to_pil_rgb(gamera_image)
-        self.addCleanup(out_image.close)
         self.assert_images_equal(in_image, out_image)
 
     def test_color(self):
@@ -110,7 +107,6 @@ class ToPil1bppTestCase(TestCase):
         gamera_support.init()
         gamera_image = gamera_support.load_image(path)
         out_image = gamera_support.to_pil_1bpp(gamera_image)
-        self.addCleanup(out_image.close)
         out_image = out_image.convert('1')  # FIXME?
         self.assert_images_equal(in_image, out_image)
 
