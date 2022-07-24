@@ -15,32 +15,39 @@
 
 import io
 
-from .tools import (
-    assert_equal,
-    interim,
-)
+from tests.tools import mock, TestCase
 
 from lib import fs
 
-def test_copy_file():
-    def t(s):
-        input_file = io.StringIO(s)
+
+class CopyFileTestCase(TestCase):
+    def _test_copy_file(self, data):
+        input_file = io.StringIO(data)
         output_file = io.StringIO()
         length = fs.copy_file(input_file, output_file)
-        assert_equal(output_file.tell(), length)
+        self.assertEqual(output_file.tell(), length)
         output_file.seek(0)
-        r = output_file.read()
-        assert_equal(s, r)
-    t('eggs')
-    with interim(fs, _block_size=1):
-        t('eggs' + 'spam' * 42)
+        result = output_file.read()
+        self.assertEqual(data, result)
 
-def test_replace_ext():
-    r = fs.replace_ext('eggs', 'spam')
-    assert_equal(r, 'eggs.spam')
-    r = fs.replace_ext('eggs.', 'spam')
-    assert_equal(r, 'eggs.spam')
-    r = fs.replace_ext('eggs.ham', 'spam')
-    assert_equal(r, 'eggs.spam')
+    def test_copy_file(self):
+        data = 'eggs'
+        with self.subTest(data=data):
+            self._test_copy_file(data)
+
+        data = 'eggs' + 'spam' * 42
+        with self.subTest(data=data):
+            with mock.patch.object(fs, '_block_size', 1):
+                self._test_copy_file(data)
+
+
+class ReplaceExtensionTestCase(TestCase):
+    def test_replace_ext(self):
+        result = fs.replace_ext('eggs', 'spam')
+        self.assertEqual(result, 'eggs.spam')
+        result = fs.replace_ext('eggs.', 'spam')
+        self.assertEqual(result, 'eggs.spam')
+        result = fs.replace_ext('eggs.ham', 'spam')
+        self.assertEqual(result, 'eggs.spam')
 
 # vim:ts=4 sts=4 sw=4 et

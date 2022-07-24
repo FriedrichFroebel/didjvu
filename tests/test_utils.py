@@ -16,97 +16,114 @@
 import gc
 import sys
 
-from .tools import (
-    assert_equal,
-    assert_false,
-    assert_raises,
-    assert_true,
-    interim,
-)
+from tests.tools import mock, TestCase
 
 from lib import utils
 
-class test_enhance_import():
 
+class EnhanceImportTestCase(TestCase):
     @classmethod
-    def setup_class(cls):
+    def setUpClass(cls):
+        # noinspection PyTypeChecker
         sys.modules['nonexistent'] = None
 
     def test_debian(self):
-        with interim(utils, debian=True):
-            with assert_raises(ImportError) as ecm:
+        with mock.patch.object(utils, 'debian', True):
+            with self.assertRaises(expected_exception=ImportError) as exception_manager:
                 try:
+                    # noinspection PyUnresolvedReferences
                     import nonexistent
-                except ImportError as ex:
-                    utils.enhance_import_error(ex,
+                except ImportError as exception:
+                    utils.enhance_import_error(
+                        exception,
                         'PyNonexistent',
                         'python-nonexistent',
-                        'http://pynonexistent.example.net/'
+                        'https://pynonexistent.example.net/'
                     )
                     raise
                 nonexistent.f()  # quieten pyflakes
-            assert_equal(str(ecm.exception),
-                'import of nonexistent halted; None in sys.modules; '
-                'please install the python-nonexistent package'
+            self.assertEqual(
+                str(exception_manager.exception),
+                (
+                    'import of nonexistent halted; None in sys.modules; '
+                    'please install the python-nonexistent package'
+                )
             )
 
     def test_debian_without_debian_package_name(self):
-        with interim(utils, debian=True):
-            with assert_raises(ImportError) as ecm:
+        with mock.patch.object(utils, 'debian', True):
+            with self.assertRaises(expected_exception=ImportError) as exception_manager:
                 try:
+                    # noinspection PyUnresolvedReferences
                     import nonexistent
-                except ImportError as ex:
-                    utils.enhance_import_error(ex,
+                except ImportError as exception:
+                    utils.enhance_import_error(
+                        exception,
                         'PyNonexistent',
                         '',
-                        'http://pynonexistent.example.net/'
+                        'https://pynonexistent.example.net/'
                     )
                     raise
                 nonexistent.f()  # quieten pyflakes
-            assert_equal(str(ecm.exception),
-                'import of nonexistent halted; None in sys.modules; '
-                'please install the PyNonexistent package <http://pynonexistent.example.net/>'
+            self.assertEqual(
+                str(exception_manager.exception),
+                (
+                    'import of nonexistent halted; None in sys.modules; '
+                    'please install the PyNonexistent package <https://pynonexistent.example.net/>'
+                )
             )
 
-    def test_nondebian(self):
-        with interim(utils, debian=False):
-            with assert_raises(ImportError) as ecm:
+    def test_non_debian(self):
+        with mock.patch.object(utils, 'debian', False):
+            with self.assertRaises(expected_exception=ImportError) as exception_manager:
                 try:
+                    # noinspection PyUnresolvedReferences
                     import nonexistent
-                except ImportError as ex:
-                    utils.enhance_import_error(ex,
+                except ImportError as exception:
+                    utils.enhance_import_error(
+                        exception,
                         'PyNonexistent',
                         'python-nonexistent',
-                        'http://pynonexistent.example.net/'
+                        'https://pynonexistent.example.net/'
                     )
                     raise
                 nonexistent.f()  # quieten pyflakes
-            assert_equal(str(ecm.exception),
-                'import of nonexistent halted; None in sys.modules; '
-                'please install the PyNonexistent package <http://pynonexistent.example.net/>'
+            self.assertEqual(
+                str(exception_manager.exception),
+                (
+                    'import of nonexistent halted; None in sys.modules; '
+                    'please install the PyNonexistent package <https://pynonexistent.example.net/>'
+                )
             )
 
-def test_proxy():
-    class obj:
-        x = 42
-    def wait():
-        assert_true(wait.ok)
+
+class ProxyTestCase(TestCase):
+    def test_proxy(self):
+        class Object:
+            x = 42
+
+        def wait():
+            self.assertTrue(wait.ok)
+            wait.ok = False
+
         wait.ok = False
-    wait.ok = False
-    class Del(object):
-        ok = False
-        def __del__(self):
-            type(self).ok = False
-    proxy = utils.Proxy(obj, wait, [Del()])
-    wait.ok = True
-    assert_equal(proxy.x, 42)
-    assert_false(wait.ok)
-    proxy.x = 37
-    assert_equal(proxy.x, 37)
-    assert_equal(obj.x, 37)
-    Del.ok = True
-    del proxy
-    gc.collect()
-    assert_false(Del.ok)
+
+        class Del:
+            ok = False
+
+            def __del__(self):
+                type(self).ok = False
+
+        proxy = utils.Proxy(Object, wait, [Del()])
+        wait.ok = True
+        self.assertEqual(proxy.x, 42)
+        self.assertFalse(wait.ok)
+        proxy.x = 37
+        self.assertEqual(proxy.x, 37)
+        self.assertEqual(Object.x, 37)
+        Del.ok = True
+        del proxy
+        gc.collect()
+        self.assertFalse(Del.ok)
 
 # vim:ts=4 sts=4 sw=4 et

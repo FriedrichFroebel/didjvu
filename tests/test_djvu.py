@@ -16,26 +16,21 @@
 import io
 import os
 import shutil
-from unittest import mock, TestCase
 
-from .tools import (
-    assert_equal,
-    assert_greater,
-    assert_image_sizes_equal,
-    assert_images_equal,
-    assert_raises,
-)
+from tests.tools import mock, TestCase
 
-from PIL import Image as pil
+from PIL import Image
 
 from lib import djvu_support as djvu
 from lib import ipc
 from lib import temporary
 
-datadir = os.path.join(os.path.dirname(__file__), 'data')
 
-def setup_module():
-    djvu.require_cli()
+class RequirementsTestCase(TestCase):
+    # noinspection PyMethodMayBeStatic
+    def test_required_binaries(self):
+        djvu.require_cli()
+
 
 def ddjvu(djvu_file, fmt='ppm'):
     cmdline = ['ddjvu', '-1', '-format=' + fmt]
@@ -54,57 +49,63 @@ def ddjvu(djvu_file, fmt='ppm'):
     if child.returncode != 0:
         raise RuntimeError('ddjvu failed')
     if stderr != '':
-        raise RuntimeError('ddjvu stderr: ' + stderr)
+        raise RuntimeError(f'ddjvu stderr: {stderr}')
     out_file = io.BytesIO(stdout)
-    return pil.open(out_file)
+    return Image.open(out_file)
 
-def test_bitonal_to_djvu():
-    path = os.path.join(datadir, 'onebit.bmp')
-    in_image = pil.open(path)
-    djvu_file = djvu.bitonal_to_djvu(in_image)
-    out_image = ddjvu(djvu_file, fmt='pbm')
-    assert_images_equal(in_image, out_image)
 
-def test_photo_to_djvu():
-    path = os.path.join(datadir, 'ycbcr-jpeg.tiff')
-    in_image = pil.open(path)
-    in_image = in_image.convert('RGB')
-    mask_image = in_image.convert('1')
-    djvu_file = djvu.photo_to_djvu(in_image, mask_image=mask_image)
-    out_image = ddjvu(djvu_file, fmt='ppm')
-    assert_image_sizes_equal(in_image, out_image)
+class BitonalToDjvuTestCase(TestCase):
+    def test_bitonal_to_djvu(self):
+        path = self.get_data_file('onebit.bmp')
+        in_image = Image.open(path)
+        djvu_file = djvu.bitonal_to_djvu(in_image)
+        out_image = ddjvu(djvu_file, fmt='pbm')
+        self.assert_images_equal(in_image, out_image)
 
-def test_djvu_iw44():
-    path = os.path.join(datadir, 'ycbcr.djvu')
-    in_djvu = open(path, 'rb')
-    out_djvu = djvu.djvu_to_iw44(in_djvu)
-    in_image = ddjvu(in_djvu, fmt='ppm')
-    out_image = ddjvu(out_djvu, fmt='ppm')
-    assert_image_sizes_equal(in_image, out_image)
-    in_djvu.seek(0)
-    in_data = in_djvu.read()
-    out_djvu.seek(0)
-    out_data = out_djvu.read()
-    assert_greater(len(in_data), len(out_data))
 
-class test_multichunk():
+class PhotoToDjvuTestCase(TestCase):
+    def test_photo_to_djvu(self):
+        path = self.get_data_file('ycbcr-jpeg.tiff')
+        in_image = Image.open(path)
+        in_image = in_image.convert('RGB')
+        mask_image = in_image.convert('1')
+        djvu_file = djvu.photo_to_djvu(in_image, mask_image=mask_image)
+        out_image = ddjvu(djvu_file, fmt='ppm')
+        self.assert_image_sizes_equal(in_image, out_image)
 
+
+class DjvuToIw44TestCase(TestCase):
+    def test_djvu_to_iw44(self):
+        path = self.get_data_file('ycbcr.djvu')
+        with open(path, mode='rb') as in_djvu:
+            out_djvu = djvu.djvu_to_iw44(in_djvu)
+            in_image = ddjvu(in_djvu, fmt='ppm')
+            out_image = ddjvu(out_djvu, fmt='ppm')
+            self.assert_image_sizes_equal(in_image, out_image)
+            in_djvu.seek(0)
+            in_data = in_djvu.read()
+        out_djvu.seek(0)
+        out_data = out_djvu.read()
+        self.assertGreater(len(in_data), len(out_data))
+
+
+class MultichunkTestCase(TestCase):
     def test_sjbz(self):
-        path = os.path.join(datadir, 'onebit.bmp')
-        in_image = pil.open(path)
-        [width, height] = in_image.size
-        sjbz_path = os.path.join(datadir, 'onebit.djvu')
+        path = self.get_data_file('onebit.bmp')
+        in_image = Image.open(path)
+        width, height = in_image.size
+        sjbz_path = self.get_data_file('onebit.djvu')
         multichunk = djvu.Multichunk(width, height, 100, sjbz=sjbz_path)
         djvu_file = multichunk.save()
         out_image = ddjvu(djvu_file, fmt='pbm')
-        assert_images_equal(in_image, out_image)
+        self.assert_images_equal(in_image, out_image)
 
     def test_incl(self):
-        path = os.path.join(datadir, 'onebit.bmp')
-        in_image = pil.open(path)
-        [width, height] = in_image.size
-        sjbz_path = os.path.join(datadir, 'onebit.djvu')
-        incl_path = os.path.join(datadir, 'shared_anno.iff')
+        path = self.get_data_file('onebit.bmp')
+        in_image = Image.open(path)
+        width, height = in_image.size
+        sjbz_path = self.get_data_file('onebit.djvu')
+        incl_path = self.get_data_file('shared_anno.iff')
         multichunk = djvu.Multichunk(width, height, 100, sjbz=sjbz_path, incl=incl_path)
         djvu_file = multichunk.save()
         with temporary.directory() as tmpdir:
@@ -113,47 +114,67 @@ class test_multichunk():
             os.link(djvu_file.name, tmp_djvu_path)
             shutil.copyfile(incl_path, tmp_incl_path)
             out_image = ddjvu(tmp_djvu_path, fmt='pbm')
-            assert_images_equal(in_image, out_image)
+            self.assert_images_equal(in_image, out_image)
 
-class test_validate_page_id():
 
+class ValidatePageIdTestCase(TestCase):
     def test_empty(self):
-        with assert_raises(ValueError) as ecm:
+        with self.assertRaises(expected_exception=ValueError) as exception_manager:
             djvu.validate_page_id('')
-        assert_equal(str(ecm.exception), 'page identifier must end with the .djvu extension')
+        self.assertEqual(
+            str(exception_manager.exception),
+            'page identifier must end with the .djvu extension'
+        )
 
     def test_bad_char(self):
-        with assert_raises(ValueError) as ecm:
+        with self.assertRaises(expected_exception=ValueError) as exception_manager:
             djvu.validate_page_id('eggs/ham.djvu')
-        assert_equal(str(ecm.exception), 'page identifier must consist only of lowercase ASCII letters, digits, _, +, - and dot')
+        self.assertEqual(
+            str(exception_manager.exception),
+            'page identifier must consist only of lowercase ASCII letters, digits, _, +, - and dot'
+        )
 
     def test_leading_bad_char(self):
-        with assert_raises(ValueError) as ecm:
+        with self.assertRaises(expected_exception=ValueError) as exception_manager:
             djvu.validate_page_id('.eggs.djvu')
-        assert_equal(str(ecm.exception), 'page identifier cannot start with +, - or a dot')
+        self.assertEqual(
+            str(exception_manager.exception),
+            'page identifier cannot start with +, - or a dot'
+        )
 
     def test_dot_dot(self):
-        with assert_raises(ValueError) as ecm:
+        with self.assertRaises(expected_exception=ValueError) as exception_manager:
             djvu.validate_page_id('eggs..djvu')
-        assert_equal(str(ecm.exception), 'page identifier cannot contain two consecutive dots')
+        self.assertEqual(
+            str(exception_manager.exception),
+            'page identifier cannot contain two consecutive dots'
+        )
 
     def test_bad_extension(self):
-        with assert_raises(ValueError) as ecm:
+        with self.assertRaises(expected_exception=ValueError) as exception_manager:
             djvu.validate_page_id('eggs.png')
-        assert_equal(str(ecm.exception), 'page identifier must end with the .djvu extension')
+        self.assertEqual(
+            str(exception_manager.exception),
+            'page identifier must end with the .djvu extension'
+        )
 
     def test_ok(self):
         n = 'eggs.djvu'
-        assert_equal(djvu.validate_page_id(n), n)
+        self.assertEqual(djvu.validate_page_id(n), n)
 
 
 class BundleDjvuViaIndirectTestCase(TestCase):
     def test_string_versus_bytes_issue(self):
         # Simplify the test by mocking away the subprocess communication which does
         # not directly influence the error.
-        with mock.patch.object(djvu.ipc.Subprocess, 'wait'):
+        # `__del__` needs to be patched to work around the wrong
+        #   ResourceWarning: subprocess 42 is still running
+        # warnings which are not relevant here as we are not executing any subprocesses
+        # at all.
+        with mock.patch.object(djvu.ipc.Subprocess, 'wait'), \
+                mock.patch.object(djvu.ipc.Subprocess, '__del__'):
             djvu_path = djvu.bundle_djvu_via_indirect(
-                *[os.path.join(datadir, 'onebit.png')]
+                *[self.get_data_file('onebit.png')]
             )
             self.assertTrue(os.path.exists(djvu_path.name))
 

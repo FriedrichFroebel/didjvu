@@ -115,6 +115,7 @@ class Subprocess(subprocess.Popen):
             raise CalledProcessError(return_code, self.__command)
         if return_code < 0:
             raise CalledProcessInterrupted(-return_code, self.__command)
+        return return_code
 
 # PIPE
 # ====

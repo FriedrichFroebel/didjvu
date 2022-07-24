@@ -15,25 +15,22 @@
 
 import os
 
-from .tools import (
-    assert_true,
-    assert_false,
-)
+from tests.tools import TestCase
 
 from lib import filetype
 
-datadir = os.path.join(os.path.dirname(__file__), 'data')
 
-def test_djvu():
-    path = os.path.join(datadir, 'ycbcr.djvu')
-    tp = filetype.check(path)
-    assert_true(tp.like(filetype.djvu))
-    assert_true(tp.like(filetype.djvu_single))
+class FileTypeTestCase(TestCase):
+    def test_djvu(self):
+        path = self.get_data_file('ycbcr.djvu')
+        file_type = filetype.check(path)
+        self.assertTrue(file_type.like(filetype.djvu))
+        self.assertTrue(file_type.like(filetype.djvu_single))
 
-def test_bad():
-    path = os.path.join(datadir, os.devnull)
-    tp = filetype.check(path)
-    assert_false(tp.like(filetype.djvu))
-    assert_false(tp.like(filetype.djvu_single))
+    def test_bad(self):
+        path = self.get_data_file(os.devnull)
+        file_type = filetype.check(path)
+        self.assertFalse(file_type.like(filetype.djvu))
+        self.assertFalse(file_type.like(filetype.djvu_single))
 
 # vim:ts=4 sts=4 sw=4 et

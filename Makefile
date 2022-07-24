@@ -48,13 +48,17 @@ else
 	install -m644 doc/$(<).1 $(DESTDIR)$(mandir)/man1/
 endif
 
+# TODO: Remove ignore part if https://github.com/vext-python/vext/issues/87 is fixed.
 .PHONY: test
-test: didjvu
-	$(PYTHON) $(<) --test --verbose tests/
+test:
+	$(PYTHON) -W ignore:ResourceWarning -m unittest discover --start-directory tests/
 
-.PHONY: test-installed
-test-installed: $(or $(shell command -v didjvu;),$(bindir)/didjvu)
-	didjvu --test --verbose tests/
+# TODO: Remove ignore part if https://github.com/vext-python/vext/issues/87 is fixed.
+.PHONY: update-coverage
+update-coverage:
+	coverage erase
+	$(PYTHON) -W ignore:ResourceWarning -m coverage run -m unittest discover --start-directory tests/
+	coverage report --include=lib/*
 
 .PHONY: clean
 clean:

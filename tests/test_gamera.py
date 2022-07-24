@@ -17,85 +17,80 @@ import glob
 import os
 import re
 
-from .tools import (
-    assert_equal,
-    assert_images_equal,
-    assert_is_instance,
-    assert_is_none,
-    fork_isolation,
-)
+from tests.tools import TestCase
 
-from PIL import Image as pil
+from PIL import Image
 
-from lib import gamera_support as gamera
+from lib import gamera_support
 
-datadir = os.path.join(os.path.dirname(__file__), 'data')
 
-def test_load_image():
-    paths = []
-    for ext in ['tiff', 'png', 'pgm', 'bmp']:
-        paths += list(map(os.path.basename,
-            glob.glob(os.path.join(datadir, '*.' + ext))
-        ))
-    @fork_isolation
-    def t(path):
-        dpi_match = re.search('dpi([0-9]+)', path)
-        path = os.path.join(datadir, path)
-        gamera.init()
-        image = gamera.load_image(path)
-        assert_is_instance(image, gamera.Image)
+class LoadImageTestCase(TestCase):
+    def _test_load_image(self, filename):
+        dpi_match = re.search(r'dpi(\d+)', filename)
+        path = self.get_data_file(filename)
+        gamera_support.init()
+        image = gamera_support.load_image(path)
+        self.assertIsInstance(image, gamera_support.Image)
         if dpi_match is None:
-            assert_is_none(image.dpi)
+            self.assertIsNone(image.dpi)
         else:
             dpi = int(dpi_match.group(1))
-            assert_is_instance(image.dpi, int)
-            assert_equal(image.dpi, dpi)
-    for path in paths:
-        yield t, path
+            self.assertIsInstance(image.dpi, int)
+            self.assertEqual(image.dpi, dpi)
 
-class test_methods():
+    def test_load_image(self):
+        paths = []
+        for extension in ['tiff', 'png', 'pgm', 'bmp']:
+            paths += list(map(
+                os.path.basename,
+                glob.glob(self.get_data_file(f'*.{extension}'))
+            ))
+        for path in paths:
+            with self.subTest(basename=path):
+                self._test_load_image(path)
 
-    @fork_isolation
-    def _test_one_method(self, path, method, args):
-        method = gamera.methods[method]
-        path = os.path.join(datadir, path)
-        gamera.init()
-        in_image = gamera.load_image(path)
-        bin_image = method(in_image, **args)
-        assert_is_instance(bin_image, gamera.Image)
-        assert_equal(bin_image.data.pixel_type, gamera.ONEBIT)
-        assert_equal(in_image.dim, bin_image.dim)
 
-    def _test_methods(self, path):
-        def t(method, args={}):
-            return self._test_one_method(path, method, args)
-        for method in gamera.methods:
-            if method == 'global':
-                yield t, method, dict(threshold=42)
-            else:
-                yield t, method
+class MethodsTestCase(TestCase):
+    def _test_one_method(self, filename, method, kwargs):
+        method = gamera_support.methods[method]
+        path = self.get_data_file(filename)
+        gamera_support.init()
+        in_image = gamera_support.load_image(path)
+        self.addCleanup(in_image.close)
+        bin_image = method(in_image, **kwargs)
+        self.addCleanup(bin_image.close)
+        self.assertIsInstance(bin_image, gamera_support.Image)
+        self.assertEqual(bin_image.data.pixel_type, gamera_support.ONEBIT)
+        self.assertEqual(in_image.dim, bin_image.dim)
+
+    def _test_methods(self, filename):
+        for method in gamera_support.methods:
+            with self.subTest(method=method):
+                kwargs = dict()
+                if method == 'global':
+                    kwargs = dict(threshold=42)
+                self._test_one_method(filename=filename, method=method, kwargs=kwargs)
 
     def test_color(self):
-        for x in self._test_methods('ycbcr-jpeg.tiff'):
-            yield x
+        self._test_methods('ycbcr-jpeg.tiff')
 
     def test_grey(self):
-        for x in self._test_methods('greyscale-packbits.tiff'):
-            yield x
+        self._test_methods('greyscale-packbits.tiff')
 
-class test_to_pil_rgb():
 
-    @fork_isolation
-    def _test(self, path):
-        path = os.path.join(datadir, path)
-        in_image = pil.open(path)
+class ToPilRgbTestCase(TestCase):
+    def _test(self, filename):
+        path = self.get_data_file(filename)
+        in_image = Image.open(path)
+        self.addCleanup(in_image.close)
         if in_image.mode != 'RGB':
             in_image = in_image.convert('RGB')
-        assert_equal(in_image.mode, 'RGB')
-        gamera.init()
-        gamera_image = gamera.load_image(path)
-        out_image = gamera.to_pil_rgb(gamera_image)
-        assert_images_equal(in_image, out_image)
+        self.assertEqual(in_image.mode, 'RGB')
+        gamera_support.init()
+        gamera_image = gamera_support.load_image(path)
+        out_image = gamera_support.to_pil_rgb(gamera_image)
+        self.addCleanup(out_image.close)
+        self.assert_images_equal(in_image, out_image)
 
     def test_color(self):
         self._test('ycbcr-jpeg.tiff')
@@ -103,20 +98,21 @@ class test_to_pil_rgb():
     def test_grey(self):
         self._test('greyscale-packbits.tiff')
 
-class test_to_pil_1bpp():
 
-    @fork_isolation
-    def _test(self, path):
-        path = os.path.join(datadir, path)
-        in_image = pil.open(path)
+class ToPil1bppTestCase(TestCase):
+    def _test(self, filename):
+        path = self.get_data_file(filename)
+        in_image = Image.open(path)
+        self.addCleanup(in_image.close)
         if in_image.mode != '1':
             in_image = in_image.convert('1')
-        assert_equal(in_image.mode, '1')
-        gamera.init()
-        gamera_image = gamera.load_image(path)
-        out_image = gamera.to_pil_1bpp(gamera_image)
+        self.assertEqual(in_image.mode, '1')
+        gamera_support.init()
+        gamera_image = gamera_support.load_image(path)
+        out_image = gamera_support.to_pil_1bpp(gamera_image)
+        self.addCleanup(out_image.close)
         out_image = out_image.convert('1')  # FIXME?
-        assert_images_equal(in_image, out_image)
+        self.assert_images_equal(in_image, out_image)
 
     def test_grey(self):
         self._test('greyscale-packbits.tiff')

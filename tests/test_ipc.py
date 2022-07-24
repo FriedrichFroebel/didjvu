@@ -13,104 +13,114 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-
-
 import errno
 import locale
 import os
 import signal
 
-from .tools import (
-    SkipTest,
-    assert_equal,
-    assert_raises,
-    assert_true,
-    interim_environ,
-)
+from tests.tools import interim_environ, TestCase
 
 from lib import ipc
 from lib import temporary
 
-nonexistent_command = 'didjvu-nonexistent-command'
 
-class test_exceptions():
+NON_EXISTENT_COMMAND = 'didjvu-nonexistent-command'
+UTF8_LOCALE_CANDIDATES = ['C.UTF-8', 'en_US.UTF-8']
 
+
+class ExceptionsTestCase(TestCase):
     def test_valid(self):
-        def t(name):
-            signo = getattr(signal, name)
-            ex = ipc.CalledProcessInterrupted(signo, 'eggs')
-            assert_equal(str(ex), "Command 'eggs' was interrupted by signal " + name)
-        for name in 'SIGINT', 'SIGABRT', 'SIGSEGV':
-            yield t, name
+        names = ['SIGINT', 'SIGABRT', 'SIGSEGV']
+        for name in names:
+            with self.subTest(name=name):
+                signal_id = getattr(signal, name)
+                exception = ipc.CalledProcessInterrupted(signal_id, 'eggs')
+                self.assertEqual(
+                    str(exception),
+                    f"Command 'eggs' was interrupted by signal {name}"
+                )
 
-    def test_invalid_signo(self):
+    def test_invalid_signal_id(self):
         # signal.NSIG is guaranteed not be a correct signal number
-        ex = ipc.CalledProcessInterrupted(signal.NSIG, 'eggs')
-        assert_equal(str(ex), "Command 'eggs' was interrupted by signal {0}".format(signal.NSIG))
+        exception = ipc.CalledProcessInterrupted(signal.NSIG, 'eggs')
+        self.assertEqual(
+            str(exception),
+            f"Command 'eggs' was interrupted by signal {signal.NSIG}"
+        )
 
-class test_wait():
 
-    def test0(self):
+class WaitTestCase(TestCase):
+    def test_exit_code_0(self):
         child = ipc.Subprocess(['true'])
-        child.wait()
+        return_code = child.wait()
+        self.assertEqual(return_code, 0)
 
-    def test1(self):
+    def test_exit_code_1(self):
         child = ipc.Subprocess(['false'])
-        with assert_raises(ipc.CalledProcessError) as ecm:
+        with self.assertRaises(expected_exception=ipc.CalledProcessError) as exception_manager:
             child.wait()
-        assert_equal(str(ecm.exception), "Command 'false' returned non-zero exit status 1.")
+        self.assertEqual(
+            str(exception_manager.exception),
+            "Command 'false' returned non-zero exit status 1."
+        )
 
     def _test_signal(self, name):
-        child = ipc.Subprocess(['cat'], stdin=ipc.PIPE)  # Any long-standing process would do.
+        # Any long-standing process would do.
+        child = ipc.Subprocess(['cat'], stdin=ipc.PIPE)
         os.kill(child.pid, getattr(signal, name))
-        with assert_raises(ipc.CalledProcessInterrupted) as ecm:
+        with self.assertRaises(expected_exception=ipc.CalledProcessInterrupted) as exception_manager:
             child.wait()
-        assert_equal(str(ecm.exception), "Command 'cat' was interrupted by signal " + name)
+        self.assertEqual(
+            str(exception_manager.exception),
+            f"Command 'cat' was interrupted by signal {name}"
+        )
 
     def test_wait_signal(self):
-        for name in 'SIGINT', 'SIGABRT', 'SIGSEGV':
-            yield self._test_signal, name
+        names = ['SIGINT', 'SIGABRT', 'SIGSEGV']
+        for name in names:
+            with self.subTest(name=name):
+                self._test_signal(name)
 
-utf8_locale_candidates = ['C.UTF-8', 'en_US.UTF-8']
 
-def get_utf8_locale():
-    old_locale = locale.setlocale(locale.LC_ALL)
-    try:
-        for new_locale in utf8_locale_candidates:
-            try:
-                locale.setlocale(locale.LC_ALL, new_locale)
-            except locale.Error:
-                continue
-            return new_locale
-    finally:
-        locale.setlocale(locale.LC_ALL, old_locale)
+class EnvironmentTestCase(TestCase):
+    @classmethod
+    def get_utf8_locale(cls):
+        old_locale = locale.setlocale(locale.LC_ALL)
+        try:
+            for new_locale in UTF8_LOCALE_CANDIDATES:
+                try:
+                    locale.setlocale(locale.LC_ALL, new_locale)
+                except locale.Error:
+                    continue
+                return new_locale
+        finally:
+            locale.setlocale(locale.LC_ALL, old_locale)
 
-utf8_locale = get_utf8_locale()
+    def setUp(self):
+        self.utf8_locale = self.get_utf8_locale()
 
-class test_environment():
-
-    def test1(self):
+    def test_call_without_env_parameter(self):
         with interim_environ(didjvu='42'):
             child = ipc.Subprocess(
                 ['sh', '-c', 'printf $didjvu'],
                 stdout=ipc.PIPE, stderr=ipc.PIPE,
             )
             stdout, stderr = child.communicate()
-            assert_equal(stdout, b'42')
-            assert_equal(stderr, b'')
+            self.assertEqual(stdout, b'42')
+            self.assertEqual(stderr, b'')
 
-    def test2(self):
+    def test_call_with_empty_env_parameter(self):
         with interim_environ(didjvu='42'):
             child = ipc.Subprocess(
                 ['sh', '-c', 'printf $didjvu'],
                 stdout=ipc.PIPE, stderr=ipc.PIPE,
-                env={},
+                env=dict(),
             )
             stdout, stderr = child.communicate()
-            assert_equal(stdout, b'42')
-            assert_equal(stderr, b'')
+            self.assertEqual(stdout, b'42')
+            self.assertEqual(stderr, b'')
 
-    def test3(self):
+    def test_call_with_custom_env_parameter(self):
         with interim_environ(didjvu='42'):
             child = ipc.Subprocess(
                 ['sh', '-c', 'printf $didjvu'],
@@ -118,8 +128,8 @@ class test_environment():
                 env=dict(didjvu='24'),
             )
             stdout, stderr = child.communicate()
-            assert_equal(stdout, b'24')
-            assert_equal(stderr, b'')
+            self.assertEqual(stdout, b'24')
+            self.assertEqual(stderr, b'')
 
     def test_path(self):
         path = os.getenv('PATH')
@@ -132,99 +142,98 @@ class test_environment():
             os.chmod(command_path, 0o700)
             path = str.join(os.pathsep, [tmpdir, path])
             with interim_environ(PATH=path):
-                child = ipc.Subprocess([command_name],
+                child = ipc.Subprocess(
+                    [command_name],
                     stdout=ipc.PIPE, stderr=ipc.PIPE,
                 )
                 stdout, stderr = child.communicate()
-                assert_equal(stdout, b'42')
-                assert_equal(stderr, b'')
+                self.assertEqual(stdout, b'42')
+                self.assertEqual(stderr, b'')
 
     def _test_locale(self):
-        child = ipc.Subprocess(['locale'],
+        child = ipc.Subprocess(
+            ['locale'],
             stdout=ipc.PIPE, stderr=ipc.PIPE
         )
         stdout, stderr = child.communicate()
         stdout = stdout.splitlines()
         stderr = stderr.splitlines()
-        assert_equal(stderr, [])
+        self.assertEqual(stderr, [])
         data = dict(line.decode().split('=', 1) for line in stdout)
-        has_lc_all = has_lc_ctype = has_lang = 0
+        has_lc_all = has_lc_ctype = has_lang = False
         for key, value in data.items():
             if key == 'LC_ALL':
-                has_lc_all = 1
-                assert_equal(value, '')
+                has_lc_all = True
+                self.assertEqual(value, '')
             elif key == 'LC_CTYPE':
-                has_lc_ctype = 1
-                if utf8_locale is None:
-                    raise SkipTest(
-                        'UTF-8 locale missing '
-                        '({0})'.format(' or '.join(utf8_locale_candidates))
+                has_lc_ctype = True
+                if self.utf8_locale is None:
+                    raise self.SkipTest(
+                        f'UTF-8 locale missing '
+                        f'({" or ".join(UTF8_LOCALE_CANDIDATES)})'
                     )
-                assert_equal(value, utf8_locale)
+                self.assertEqual(value, self.utf8_locale)
             elif key == 'LANG':
-                has_lang = 1
-                assert_equal(value, '')
+                has_lang = True
+                self.assertEqual(value, '')
             elif key == 'LANGUAGE':
-                assert_equal(value, '')
+                self.assertEqual(value, '')
             else:
-                assert_equal(value, '"POSIX"')
-        assert_true(has_lc_all)
-        assert_true(has_lc_ctype)
-        assert_true(has_lang)
+                self.assertEqual(value, '"POSIX"')
+        self.assertTrue(has_lc_all)
+        self.assertTrue(has_lc_ctype)
+        self.assertTrue(has_lang)
 
     def test_locale_lc_all(self):
-        with interim_environ(LC_ALL=utf8_locale):
+        with interim_environ(LC_ALL=self.utf8_locale):
             self._test_locale()
 
     def test_locale_lc_ctype(self):
-        with interim_environ(LC_ALL=None, LC_CTYPE=utf8_locale):
+        with interim_environ(LC_ALL=None, LC_CTYPE=self.utf8_locale):
             self._test_locale()
 
     def test_locale_lang(self):
-        with interim_environ(LC_ALL=None, LC_CTYPE=None, LANG=utf8_locale):
+        with interim_environ(LC_ALL=None, LC_CTYPE=None, LANG=self.utf8_locale):
             self._test_locale()
 
-def test_init_exception():
-    with assert_raises(OSError) as ecm:
-        ipc.Subprocess([nonexistent_command])
-    exc_message = "[Errno {errno.ENOENT}] No such file or directory: {cmd!r}".format(
-        errno=errno,
-        cmd=nonexistent_command,
-    )
-    assert_equal(str(ecm.exception), exc_message)
 
-class test_shell_escape():
+class InitExceptionTestCase(TestCase):
+    def test_init_exception(self):
+        with self.assertRaises(expected_exception=OSError) as exception_manager:
+            ipc.Subprocess([NON_EXISTENT_COMMAND])
+        exception_message = f"[Errno {errno.ENOENT}] No such file or directory: {NON_EXISTENT_COMMAND!r}"
+        self.assertEqual(str(exception_manager.exception), exception_message)
 
+
+class ShellEscapeTestCase(TestCase):
     def test_no_escape(self):
-        s = 'eggs'
-        r = ipc.shell_escape([s])
-        assert_equal(r, s)
+        value = 'eggs'
+        result = ipc.shell_escape([value])
+        self.assertEqual(result, value)
 
     def test_escape(self):
-        s = '$pam'
-        r = ipc.shell_escape([s])
-        assert_equal(r, "'$pam'")
-        s = "s'pam"
-        r = ipc.shell_escape([s])
-        assert_equal(r, """'s'"'"'pam'""")
+        value = '$pam'
+        result = ipc.shell_escape([value])
+        self.assertEqual(result, "'$pam'")
+        value = "s'pam"
+        result = ipc.shell_escape([value])
+        self.assertEqual(result, """'s'"'"'pam'""")
 
     def test_list(self):
         lst = ['$pam', 'eggs', "s'pam"]
-        r = ipc.shell_escape(lst)
-        assert_equal(r, """'$pam' eggs 's'"'"'pam'""")
+        result = ipc.shell_escape(lst)
+        self.assertEqual(result, """'$pam' eggs 's'"'"'pam'""")
 
-class test_require():
 
+class RequireTestCase(TestCase):
+    # noinspection PyMethodMayBeStatic
     def test_ok(self):
         ipc.require('true', 'false')
 
     def test_fail(self):
-        with assert_raises(OSError) as ecm:
-            ipc.require(nonexistent_command)
-        exc_message = "[Errno {errno.ENOENT}] command not found: {cmd!r}".format(
-            errno=errno,
-            cmd=nonexistent_command,
-        )
-        assert_equal(str(ecm.exception), exc_message)
+        with self.assertRaises(expected_exception=OSError) as exception_manager:
+            ipc.require(NON_EXISTENT_COMMAND)
+        exception_message = f"[Errno {errno.ENOENT}] command not found: {NON_EXISTENT_COMMAND!r}"
+        self.assertEqual(str(exception_manager.exception), exception_message)
 
 # vim:ts=4 sts=4 sw=4 et

@@ -124,20 +124,13 @@ jobs:
       run: |
         sudo apt-get install libgirepository1.0-dev
         python -m pip install pygobject
-    # Regular `nose` does not work any more with Python 3.10, requiring modifications in the calling source.
-    # Issue: https://github.com/nose-devs/nose/issues/1099
-    # TODO: Upgrade to `nose2` or another test runner.
-    - name: install nose
-      run:
-        pip install nose
     - name: run tests
       run:
         make test
     - name: determine coverage
       run: |
         python -m pip install coverage
-        ./private/update-coverage
-        cat tests/coverage
+        make update-coverage
     # Does not work correctly with `py3exiv2` installed for now.
     #- name: run pyflakes
       #run: |
