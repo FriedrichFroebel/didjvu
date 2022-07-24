@@ -169,7 +169,6 @@ class Plugin(object):
 def _load_methods():
     replace_suffix = re.compile('_threshold$').sub
     class _methods(object):
-        pass
         from gamera.plugins.threshold import abutaleb_threshold
         from gamera.plugins.threshold import bernsen_threshold
         from gamera.plugins.threshold import djvu_threshold
