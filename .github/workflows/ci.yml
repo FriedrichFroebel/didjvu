@@ -1,7 +1,14 @@
 name: CI
+
 on:
 - push
 - pull_request
+
+env:
+  # Allow automated checks.
+  BOOST_VERSION: 1.80.0
+  BOOST_URL: https://boostorg.jfrog.io/artifactory/main/release/1.80.0/source/boost_1_80_0.tar.gz
+
 jobs:
   main:
     strategy:
@@ -115,7 +122,7 @@ jobs:
     - name: install Boost.Python
       run: |
         mkdir deps
-        wget https://boostorg.jfrog.io/artifactory/main/release/1.78.0/source/boost_1_78_0.tar.gz -O deps/boost.tar.gz
+        wget $BOOST_URL -O deps/boost.tar.gz
         cd deps
         tar -xvzf boost.tar.gz
         cd boost_*/
