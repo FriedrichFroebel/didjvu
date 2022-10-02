@@ -1,0 +1,79 @@
+#!/usr/bin/env python
+
+import sys
+from dataclasses import dataclass
+from pathlib import Path
+
+import requests
+import yaml
+from bs4 import BeautifulSoup
+
+
+BASE_URL = "https://www.boost.org"
+URL = f"{BASE_URL}/users/download/"
+
+
+@dataclass
+class BoostRelease:
+    version: str = None
+    doc_base: str = None
+    source_download: str = None
+    release_notes: str = None
+
+
+def fetch_latest_boost_release():
+    soup = BeautifulSoup(requests.get(URL).content, features="lxml")
+    news_title = soup.find("span", class_="news-title")
+    version = news_title.text.split(" ", maxsplit=1)[1]
+    doc_base = soup.find("a", string="Documentation")["href"]
+    doc_base = f"{BASE_URL}{doc_base}"
+    release_notes = soup.find("a", string="Release Notes")["href"]
+    release_notes = f"{BASE_URL}{release_notes}"
+    download_table = soup.find("table", class_="download-table")
+    download_table_rows = soup.find_all("tr")
+    source_download = download_table_rows[1].find("a")["href"]
+
+    assert version, version
+    return BoostRelease(version, doc_base, source_download, release_notes)
+
+
+def get_all_workflow_files():
+    return Path(".github/workflows").glob("*.yml")
+
+
+def check_workflow(workflow_path, latest_boost_release):
+    with open(workflow_path) as fd:
+        content = yaml.safe_load(fd)
+    env = content.get("env")
+    if not env:
+        return True
+    current_version = env.get("BOOST_VERSION")
+    if not current_version:
+        return True
+    boost_url = env.get("BOOST_URL")
+    if current_version not in boost_url:
+        print(
+            f"The Boost version {current_version} is not part of the URL {boost_url} in {workflow_path}."
+        )
+        return False
+    if current_version != latest_boost_release.version:
+        print(
+            f"Boost version {latest_boost_release.version} is available for {workflow_path} (currently: {current_version}). See the latest release notes at {latest_boost_release.release_notes}."
+        )
+        return False
+    return True
+
+
+def main():
+    latest_release = fetch_latest_boost_release()
+    are_valid = True
+    for workflow_path in get_all_workflow_files():
+        are_valid &= check_workflow(
+            workflow_path=workflow_path, latest_boost_release=latest_release
+        )
+    if not are_valid:
+        sys.exit(5)
+
+
+if __name__ == "__main__":
+    main()
