@@ -48,7 +48,7 @@ class VersionAction(argparse.Action):
         python_version = sys.version_info
         print(f'+ Python {python_version.major}.{python_version.minor}.{python_version.micro}')
 
-        from lib import gamera_support
+        from didjvu import gamera_support
         print(f'+ Gamera {gamera_support.gamera.__version__}')
         pil_name = 'Pillow'
         try:

@@ -30,10 +30,10 @@ from gi.repository import GExiv2
 if GExiv2.get_version() < 1003:
     raise ImportError('GExiv2 >= 0.10.3 is required')  # no coverage
 
-from lib import temporary
-from lib import timestamp
+from didjvu import temporary
+from didjvu import timestamp
 
-from lib.xmp import namespaces
+from didjvu.xmp import namespaces
 
 
 GExiv2.Metadata.register_xmp_namespace(namespaces.didjvu, 'didjvu')

@@ -18,7 +18,7 @@ import sys
 
 from tests.tools import mock, TestCase
 
-from lib import utils
+from didjvu import utils
 
 
 class EnhanceImportTestCase(TestCase):

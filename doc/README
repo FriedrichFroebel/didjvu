@@ -15,7 +15,7 @@ Prerequisites
 The following software is required:
 
 * Python_ 3
-* Gamera-4_ (≥ 4.0)
+* Gamera-4_ (≥ 4.0) (not available on PyPI)
 * Pillow_
 * DjVuLibre_ (≥ 3.5.22)
 * minidjvu_ (≥ 0.8) for the ``--pages-per-dict``/``-p`` option
@@ -53,9 +53,13 @@ You can use didjvu without installing it, straight out of unpacked source tarbal
 
 It's also possible to install it system-wide with::
 
-   make install
+   pip install .
 
-By default, ``make install`` installs the package to ``/usr/local``. You can specify a different installation prefix by setting the ``PREFIX`` variable, e.g.::
+The man pages can be deployed using::
+
+   make install_manpage
+
+By default, ``make install_manpage`` installs them to ``/usr/local/``. You can specify a different installation prefix by setting the ``PREFIX`` variable, e.g.::
 
    make install PREFIX="$HOME/.local"
    
@@ -69,6 +73,17 @@ The process involved the *2to3* tool and manual fixes afterwards to get the exis
 At the moment there are no plans to submit a pull request to the upstream repository, which would probably require some changes to my code as well. This is mostly due to the corresponding upstream issue being marked as *wontfix*: `Issue #13`_.
 
 I will try to keep this fork/port in sync with the upstream changes where necessary. Please note that I do not have any plans on implementing completely new features for now. Feature requests and bugs which can be reproduced in the original version as well should be reported at both places in the best case.
+
+Differences from upstream
+-------------------------
+
+* Package requires Python ≥ 3.6.
+* Drop old Gamera workarounds.
+* Migrate from *nose* to plain *unittest* stdlib module.
+* Conform to PEP8 coding style.
+* Use standardized *setup.py*-based installation.
+* Rename *lib* to *didjvu* and migrate *didjvu* binary to *__main__.py* and console script version.
+
 
 .. _@rmast:
    https://github.com/rmast

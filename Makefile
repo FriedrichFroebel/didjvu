@@ -16,37 +16,16 @@ PYTHON = python3
 PREFIX = /usr/local
 DESTDIR =
 
-bindir = $(PREFIX)/bin
-basedir = $(PREFIX)/share/didjvu
 mandir = $(PREFIX)/share/man
 
 .PHONY: all
 all: ;
 
-python_exe = $(shell $(PYTHON) -c 'import sys; print(sys.executable)')
-
-.PHONY: install
-install: didjvu
-	$(PYTHON) - < lib/__init__.py  # Python version check
-	install -d $(DESTDIR)$(bindir)
-	sed \
-		-e "1 s@^#!.*@#!$(python_exe)@" \
-		-e "s#^basedir = .*#basedir = '$(basedir)/'#" \
-		$(<) > $(<).tmp
-	install $(<).tmp $(DESTDIR)$(bindir)/$(<)
-	rm $(<).tmp
-	install -d $(DESTDIR)$(basedir)/lib/xmp
-	install -p -m644 lib/xmp/*.py $(DESTDIR)$(basedir)/lib/xmp/
-	install -p -m644 lib/*.py $(DESTDIR)$(basedir)/lib/
-ifeq "$(DESTDIR)" ""
-	umask 022 && $(PYTHON) -m compileall -q $(basedir)/lib/
-endif
-ifeq "$(wildcard doc/*.1)" ""
-	# run "$(MAKE) -C doc" to build the manpage
-else
+.PHONY: install_manpage
+install_manpage: didjvu
+	$(MAKE) -C doc  # build documentation
 	install -d $(DESTDIR)$(mandir)/man1
 	install -m644 doc/$(<).1 $(DESTDIR)$(mandir)/man1/
-endif
 
 # TODO: Remove ignore part if https://github.com/vext-python/vext/issues/87 is fixed.
 .PHONY: test

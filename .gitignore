@@ -19,7 +19,7 @@ dist/
 downloads/
 eggs/
 .eggs/
-lib/
+didjvu/
 lib64/
 parts/
 sdist/

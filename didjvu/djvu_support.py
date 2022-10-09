@@ -21,9 +21,9 @@ import os
 import re
 import struct
 
-from lib import ipc
-from lib import temporary
-from lib import utils
+from didjvu import ipc
+from didjvu import temporary
+from didjvu import utils
 
 DPI_MIN = 72
 DPI_DEFAULT = 300

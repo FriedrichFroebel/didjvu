@@ -20,9 +20,9 @@ didjvu's command-line interface
 import argparse
 import functools
 
-from lib import djvu_support
-from lib import version
-from lib import xmp
+from didjvu import djvu_support
+from didjvu import version
+from didjvu import xmp
 
 
 def range_int(x, y, typename):
@@ -132,8 +132,8 @@ class ArgumentParser(argparse.ArgumentParser):
         background_crcb = djvu_support.CRCB.normal
         background_subsample = 3
 
-    def __init__(self, methods, default_method):
-        super(ArgumentParser, self).__init__(formatter_class=argparse.RawDescriptionHelpFormatter)
+    def __init__(self, methods, default_method, prog=None):
+        super(ArgumentParser, self).__init__(formatter_class=argparse.RawDescriptionHelpFormatter, prog=prog)
         self.add_argument('--version', action=version.VersionAction)
         parser_separate = self.add_subparser('separate', help='generate masks for images')
         parser_encode = self.add_subparser('encode', help='convert images to single-page DjVu documents')

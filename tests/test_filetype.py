@@ -17,7 +17,7 @@ import os
 
 from tests.tools import TestCase
 
-from lib import filetype
+from didjvu import filetype
 
 
 class FileTypeTestCase(TestCase):

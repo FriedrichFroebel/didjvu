@@ -19,7 +19,7 @@ from xml.etree import ElementTree
 
 from tests.tools import TestCase
 
-from lib import version
+from didjvu import version
 
 _HERE = os.path.dirname(__file__)
 DOC_DIRECTORY = os.path.join(_HERE, os.pardir, 'doc')

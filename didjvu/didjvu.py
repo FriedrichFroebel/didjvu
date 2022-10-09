@@ -22,16 +22,16 @@ import logging
 import os
 import sys
 
-from lib import cli
-from lib import djvu_support
-from lib import filetype
-from lib import fs
-from lib import gamera_support
-from lib import ipc
-from lib import templates
-from lib import temporary
-from lib import utils
-from lib import xmp
+from didjvu import cli
+from didjvu import djvu_support
+from didjvu import filetype
+from didjvu import fs
+from didjvu import gamera_support
+from didjvu import ipc
+from didjvu import templates
+from didjvu import temporary
+from didjvu import utils
+from didjvu import xmp
 
 
 def setup_logging():
@@ -212,8 +212,8 @@ def format_compression_info(bytes_in, bytes_out, bits_per_pixel):
 
 
 class Main:
-    def __init__(self):
-        parser = cli.ArgumentParser(gamera_support.METHODS, default_method='djvu')
+    def __init__(self, prog=None):
+        parser = cli.ArgumentParser(gamera_support.METHODS, default_method='djvu', prog=prog)
         parser.parse_arguments(actions=self)
 
     def check_common(self, options):

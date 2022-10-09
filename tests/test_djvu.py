@@ -21,9 +21,9 @@ from tests.tools import mock, silence_truncated_file_read_warnings, TestCase
 
 from PIL import Image
 
-from lib import djvu_support as djvu
-from lib import ipc
-from lib import temporary
+from didjvu import djvu_support as djvu
+from didjvu import ipc
+from didjvu import temporary
 
 
 class RequirementsTestCase(TestCase):

@@ -20,7 +20,7 @@ import sys
 
 from tests.tools import mock, TestCase
 
-from lib import cli
+from didjvu import cli
 
 
 class RangeIntTestCase(TestCase):

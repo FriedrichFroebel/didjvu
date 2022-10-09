@@ -23,7 +23,7 @@ import math
 import re
 import sys
 
-from lib import utils
+from didjvu import utils
 
 try:
     from PIL import Image as PILImage

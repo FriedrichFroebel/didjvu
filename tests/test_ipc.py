@@ -20,8 +20,8 @@ import signal
 
 from tests.tools import interim_environ, TestCase
 
-from lib import ipc
-from lib import temporary
+from didjvu import ipc
+from didjvu import temporary
 
 
 NON_EXISTENT_COMMAND = 'didjvu-nonexistent-command'

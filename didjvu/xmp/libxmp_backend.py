@@ -19,9 +19,9 @@ XMP support (python-xmp-toolkit backend)
 
 import libxmp
 
-from lib import timestamp
+from didjvu import timestamp
 
-from lib.xmp import namespaces
+from didjvu.xmp import namespaces
 
 
 class XmpError(RuntimeError):

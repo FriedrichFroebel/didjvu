@@ -15,7 +15,7 @@
 
 from tests.tools import TestCase
 
-from lib import templates
+from didjvu import templates
 
 
 class TemplatesTestCase(TestCase):

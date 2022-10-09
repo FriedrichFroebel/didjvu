@@ -18,7 +18,7 @@ import time
 
 from tests.tools import interim_environ, TestCase
 
-from lib import timestamp
+from didjvu import timestamp
 
 
 class NowTestCase(TestCase):

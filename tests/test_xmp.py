@@ -21,10 +21,10 @@ from xml.etree import ElementTree
 
 from tests.tools import SkipTest, TestCase
 
-from lib import ipc
-from lib import temporary
-from lib import xmp
-from lib.xmp import namespaces
+from didjvu import ipc
+from didjvu import temporary
+from didjvu import xmp
+from didjvu.xmp import namespaces
 
 logger = logging.getLogger(__name__)
 del logging

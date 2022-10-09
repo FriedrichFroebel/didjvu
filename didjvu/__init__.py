@@ -1,7 +1,6 @@
-#!/usr/bin/env python
 # encoding=UTF-8
 
-# Copyright © 2009-2018 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2009-2021 Jakub Wilk <jwilk@jwilk.net>
 #
 # This file is part of didjvu.
 #
@@ -14,15 +13,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-import sys
-
-basedir = None
-if basedir is not None:
-    sys.path[:0] = [basedir]
-
-# noinspection PyUnresolvedReferences
-from lib import didjvu  # noqa: E402
-
-didjvu.Main()
+"""
+didjvu's private modules
+"""
 
 # vim:ts=4 sts=4 sw=4 et

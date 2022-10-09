@@ -21,7 +21,7 @@ from tests.tools import silence_truncated_file_read_warnings, TestCase
 
 from PIL import Image
 
-from lib import gamera_support
+from didjvu import gamera_support
 
 
 class LoadImageTestCase(TestCase):

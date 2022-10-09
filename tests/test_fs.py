@@ -17,7 +17,7 @@ import io
 
 from tests.tools import mock, TestCase
 
-from lib import fs
+from didjvu import fs
 
 
 class CopyFileTestCase(TestCase):

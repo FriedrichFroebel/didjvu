@@ -18,7 +18,7 @@ import functools
 import os
 from unittest import mock, SkipTest, TestCase as _TestCase
 
-from lib import temporary
+from didjvu import temporary
 
 
 class TestCase(_TestCase):

@@ -20,28 +20,28 @@ XMP support
 import errno
 import uuid
 
-from lib import timestamp
-from lib import version
+from didjvu import timestamp
+from didjvu import version
 
 
 def load_backend():
     try:
         # noinspection PyUnresolvedReferences
-        from lib.xmp import gexiv2_backend
+        from didjvu.xmp import gexiv2_backend
         return gexiv2_backend, None
     except ImportError as _error:  # no coverage
         error = _error
 
     try:
         # noinspection PyUnresolvedReferences
-        from lib.xmp import libxmp_backend
+        from didjvu.xmp import libxmp_backend
         return libxmp_backend, error
     except ImportError:  # no coverage
         pass
 
     try:
         # noinspection PyUnresolvedReferences
-        from lib.xmp import pyexiv2_backend
+        from didjvu.xmp import pyexiv2_backend
         return pyexiv2_backend, error
     except ImportError:  # no coverage
         pass

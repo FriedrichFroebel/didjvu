@@ -24,10 +24,10 @@ from xml.etree import ElementTree
 
 import pyexiv2.xmp
 
-from lib import temporary
-from lib import timestamp
+from didjvu import temporary
+from didjvu import timestamp
 
-from lib.xmp import namespaces
+from didjvu.xmp import namespaces
 
 
 def xmp_register_namespace(prefix, uri):
