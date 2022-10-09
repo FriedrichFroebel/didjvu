@@ -157,7 +157,7 @@ jobs:
         cd /
         which didjvu
         cat $(which didjvu)
-        ls -l $(dirname $(which didjvu))/../lib/${{ matrix.python }}/site-packages/didjvu/
+        ls -l $(dirname $(which didjvu))/../lib/python${{ matrix.python }}/site-packages/didjvu/
         didjvu --version
         didjvu --help
     - name: install man page
