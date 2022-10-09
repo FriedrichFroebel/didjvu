@@ -37,7 +37,7 @@ test:
 update-coverage:
 	coverage erase
 	$(PYTHON) -W ignore:ResourceWarning -m coverage run -m unittest discover --start-directory tests/
-	coverage report --include=lib/*
+	coverage report --include=didjvu/*
 
 .PHONY: clean
 clean:
