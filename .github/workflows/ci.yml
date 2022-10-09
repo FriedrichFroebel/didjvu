@@ -155,6 +155,9 @@ jobs:
     - name: check whether the executable was installed correctly
       run: |
         cd /
+        which didjvu
+        cat $(which didjvu)
+        ls -l $(dirname $(which didjvu))/../lib/${{ matrix.python }}/site-packages/didjvu/
         didjvu --version
         didjvu --help
     - name: install man page
