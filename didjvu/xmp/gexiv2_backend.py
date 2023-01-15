@@ -38,7 +38,7 @@ from didjvu.xmp import namespaces
 
 
 try:
-    GExiv2.Metadata.try_register_xmp_namespace(namespace.didjvu, 'didjvu')
+    GExiv2.Metadata.try_register_xmp_namespace(namespaces.didjvu, 'didjvu')
 except AttributeError:  # no coverage
     # GEXiv2 < 0.14.0
     # Might be dropped in April 2025 when Ubuntu 20.04 is EOL.
