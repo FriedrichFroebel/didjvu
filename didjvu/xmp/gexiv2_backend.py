@@ -27,8 +27,9 @@ except ValueError as exception:  # no coverage
     raise ImportError(exception)
 # noinspection PyUnresolvedReferences
 from gi.repository import GExiv2
-if GExiv2.get_version() < 1003:
-    raise ImportError('GExiv2 >= 0.10.3 is required')  # no coverage
+if GExiv2.get_version() < 1202:
+    # Version format: https://valadoc.org/gexiv2/GExiv2.get_version.html
+    raise ImportError('GExiv2 >= 0.12.2 is required')  # no coverage
 
 from didjvu import temporary
 from didjvu import timestamp
@@ -36,7 +37,12 @@ from didjvu import timestamp
 from didjvu.xmp import namespaces
 
 
-GExiv2.Metadata.register_xmp_namespace(namespaces.didjvu, 'didjvu')
+try:
+    GExiv2.Metadata.try_register_xmp_namespace(namespace.didjvu, 'didjvu')
+except AttributeError:  # no coverage
+    # GEXiv2 < 0.14.0
+    # Might be dropped in April 2025 when Ubuntu 20.04 is EOL.
+    GExiv2.Metadata.register_xmp_namespace(namespaces.didjvu, 'didjvu')
 
 
 class XmpError(RuntimeError):
@@ -70,7 +76,7 @@ class MetadataBase:
             return fallback
 
     def __getitem__(self, key):
-        value = self._meta.get_tag_string(f'Xmp.{key}')
+        value = self._meta.try_get_tag_string(f'Xmp.{key}')
         if value is None:
             raise KeyError(f'Xmp.{key}')
         return value
@@ -80,7 +86,7 @@ class MetadataBase:
             value = str(value)
         elif key.startswith('didjvu.'):
             value = str(value)
-        self._meta.set_tag_string(f'Xmp.{key}', value)
+        self._meta.try_set_tag_string(f'Xmp.{key}', value)
 
     def _add_to_history(self, event, index):
         for key, value in event.items:
@@ -98,12 +104,12 @@ class MetadataBase:
             i = int(match.group(1))
             n = max(i, n)
         if n == 0:
-            self._meta.set_xmp_tag_struct('Xmp.xmpMM.History', GExiv2.StructureType.SEQ)
+            self._meta.try_set_xmp_tag_struct('Xmp.xmpMM.History', GExiv2.StructureType.SEQ)
         return self._add_to_history(event, n + 1)
 
     def serialize(self):
         return '<?xml version="1.0"?>\n' + (
-            self._meta.generate_xmp_packet(
+            self._meta.try_generate_xmp_packet(
                 GExiv2.XmpFormatFlags.OMIT_PACKET_WRAPPER,
                 0
             ) or self._empty_xmp
