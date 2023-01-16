@@ -135,9 +135,12 @@ jobs:
         cd deps
         tar -xzf boost.tar.gz
         cd boost_*/
-        ./bootstrap.sh --with-libraries=python --with-python=python
+        ./bootstrap.sh --with-libraries=python
         sudo ./b2 install
         rm -rf deps
+    - name: check Boost.Python
+      run:
+        locate libboost_python
     - name: install py3exiv2
       run: |
         sudo apt-get install libexiv2-dev
