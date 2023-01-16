@@ -91,7 +91,7 @@ jobs:
     - name: unpack Gamera
       run: |
         cd deps/
-        tar -xvzf gamera-*.tar.gz
+        tar -xzf gamera-*.tar.gz
     - name: build Gamera
       run: |
         cd deps/gamera-*/
@@ -133,10 +133,11 @@ jobs:
         mkdir deps
         wget $BOOST_URL -O deps/boost.tar.gz
         cd deps
-        tar -xvzf boost.tar.gz
+        tar -xzf boost.tar.gz
         cd boost_*/
-        ./bootstrap.sh --with-libraries=python
+        ./bootstrap.sh --with-libraries=python --with-python=python
         sudo ./b2 install
+        rm -rf deps
     - name: install py3exiv2
       run: |
         sudo apt-get install libexiv2-dev
