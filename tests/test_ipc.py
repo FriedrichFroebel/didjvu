@@ -69,7 +69,7 @@ class WaitTestCase(TestCase):
         with self.assertRaises(expected_exception=ipc.CalledProcessInterrupted) as exception_manager:
             with ipc.Subprocess(['cat'], stdin=ipc.PIPE) as child:
                 os.kill(child.pid, getattr(signal, name))
-        
+
         self.assertEqual(
             str(exception_manager.exception),
             f"Command 'cat' was interrupted by signal {name}"

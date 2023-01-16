@@ -137,7 +137,6 @@ jobs:
         cd boost_*/
         ./bootstrap.sh --with-libraries=python
         sudo ./b2 install
-        rm -rf deps
     - name: install py3exiv2
       run: |
         sudo apt-get install libexiv2-dev

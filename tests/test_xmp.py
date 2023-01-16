@@ -124,7 +124,6 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
         except ipc.CalledProcessError:
             if not fail_ok:
                 raise
-        
 
     def assert_correct_software_agent(self, software_agent):
         self.assertRegex(
