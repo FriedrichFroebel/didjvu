@@ -140,7 +140,7 @@ jobs:
         rm -rf deps
     - name: check Boost.Python
       run:
-        ls -l /usr/local/lib/libbost*
+        ls -l /usr/local/lib/libboost*
     - name: update LD_LIBRARY_PATH
       run:
         echo "LD_LIBRARY_PATH=/usr/local/lib:$( echo $LD_LIBRARY_PATH )" >> $GITHUB_ENV
