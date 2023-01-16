@@ -138,6 +138,13 @@ jobs:
         ./bootstrap.sh --with-libraries=python
         sudo ./b2 install
         rm -rf deps
+    # The following two steps ensure that `libboost_python*.so.*` actually is available.
+    # Otherwise, the shared object would not be found during the tests (although the
+    # *py3exiv2* build actually finds them beforehand). For this reason, just add
+    # the installation path to the search path for Python.
+    # The alternative would be to use `--prefix` during bootstrapping above with the
+    # original value of `LD_LIBRARY_PATH`.
+    # Reference: https://github.com/boostorg/boost/blob/master/bootstrap.sh
     - name: check Boost.Python
       run:
         ls -l /usr/local/lib/libboost*
