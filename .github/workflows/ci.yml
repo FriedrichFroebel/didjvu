@@ -140,7 +140,10 @@ jobs:
         rm -rf deps
     - name: check Boost.Python
       run:
-        locate libboost_python
+        ls -l /usr/local/lib/libbost*
+    - name: update LD_LIBRARY_PATH
+      run:
+        echo "LD_LIBRARY_PATH=/usr/local/lib:$( echo $LD_LIBRARY_PATH )" >> $GITHUB_ENV
     - name: install py3exiv2
       run: |
         sudo apt-get install libexiv2-dev
