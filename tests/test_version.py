@@ -37,12 +37,15 @@ class ChangelogTestCase(TestCase):
 class ManpageTestCase(TestCase):
     def test_manpage(self):
         path = os.path.join(DOC_DIRECTORY, 'manpage.xml')
-        for event, element in ElementTree.iterparse(path):
-            if element.tag == 'refmiscinfo' and element.get('class') == 'version':
-                self.assertEqual(element.text, version.__version__)
-                break
-        else:
-            self.fail("missing <refmiscinfo class='version'>")
+        # Do not feed path into `iterparse()` due to
+        # https://github.com/python/cpython/issues/69893
+        with open(path, mode='rb') as fd:
+            for event, element in ElementTree.iterparse(fd):
+                if element.tag == 'refmiscinfo' and element.get('class') == 'version':
+                    self.assertEqual(element.text, version.__version__)
+                    break
+            else:
+                self.fail("missing <refmiscinfo class='version'>")
 
 
 class GetSoftwareAgentTestCase(TestCase):

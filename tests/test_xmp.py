@@ -17,6 +17,7 @@ import importlib
 import io
 import logging
 import os
+from contextlib import contextmanager
 from xml.etree import ElementTree
 
 from tests.tools import SkipTest, TestCase
@@ -101,25 +102,29 @@ class NamespacesTestCase(TestCase):
 
 
 class MetadataTestCase(UuuidCheckMixin, TestCase):
+    @contextmanager
     def run_exiv2(self, filename, fail_ok=False):
+        def read_from_subprocess():
+            try:
+                with ipc.Subprocess(
+                        ['exiv2', '-P', 'Xkt', 'print', filename],
+                        stdout=ipc.PIPE,
+                        stderr=ipc.PIPE,
+                ) as child:
+                    for line in sorted(child.stdout):
+                        yield line.decode('utf-8')
+                    stderr = child.stderr.read()
+                    if not fail_ok:
+                        self.assertEqual(stderr.decode('utf-8'), '')
+            except OSError as exception:
+                raise self.SkipTest(str(exception))
+
         try:
-            child = ipc.Subprocess(
-                ['exiv2', '-P', 'Xkt', 'print', filename],
-                stdout=ipc.PIPE,
-                stderr=ipc.PIPE,
-            )
-        except OSError as exception:
-            raise self.SkipTest(str(exception))
-        for line in sorted(child.stdout):
-            yield line.decode('utf-8')
-        stderr = child.stderr.read()
-        if not fail_ok:
-            self.assertEqual(stderr.decode('utf-8'), '')
-        try:
-            child.wait()
+            yield read_from_subprocess()
         except ipc.CalledProcessError:
             if not fail_ok:
                 raise
+        
 
     def assert_correct_software_agent(self, software_agent):
         self.assertRegex(
@@ -151,8 +156,9 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
     def _test_empty_exiv2(self, xmp_file, exception=None):
         if exception is not None:
             raise exception
-        for line in self.run_exiv2(xmp_file.name, fail_ok=True):
-            self.assertEqual(line, '')
+        with self.run_exiv2(xmp_file.name, fail_ok=True) as output:
+            for line in output:
+                self.assertEqual(line, '')
 
     def _test_empty_libxmp(self, xmp_file, exception=None):
         if exception is not None:
@@ -223,54 +229,54 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
     def _test_new_exiv2(self, xmp_file, exception=None):
         if exception is not None:
             raise exception
-        output = self.run_exiv2(xmp_file.name)
 
-        def pop():
-            return tuple(next(output).rstrip('\n').split(None, 1))
+        with self.run_exiv2(xmp_file.name) as output:
+            def pop():
+                return tuple(next(output).rstrip('\n').split(None, 1))
 
-        # Dublin Core:
-        self.assertEqual(pop(), ('Xmp.dc.format', 'image/x-test'))
-        # Internal properties:
-        self.assertEqual(pop(), ('Xmp.didjvu.test_bool', 'True'))
-        self.assertEqual(pop(), ('Xmp.didjvu.test_int', '42'))
-        self.assertEqual(pop(), ('Xmp.didjvu.test_str', 'eggs'))
-        # XMP:
-        key, metadata_date = pop()
-        self.assert_rfc3339_timestamp(metadata_date)
-        self.assertEqual(key, 'Xmp.xmp.MetadataDate')
-        key, modify_date = pop()
-        self.assertEqual(key, 'Xmp.xmp.ModifyDate')
-        self.assert_rfc3339_timestamp(modify_date)
-        self.assertEqual(metadata_date, modify_date)
-        # XMP Media Management:
-        # - DocumentID:
-        key, document_id = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.DocumentID')
-        self.assert_uuid_urn(document_id)
-        # - History:
-        self.assertEqual(pop(), ('Xmp.xmpMM.History', 'type="Seq"'))
-        # - History[1]:
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[1]', 'type="Struct"'))
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:action', 'converted'))
-        key, event_instance_id = pop()
-        self.assert_uuid_urn(event_instance_id)
-        self.assertEqual(key, 'Xmp.xmpMM.History[1]/stEvt:instanceID')
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:parameters', 'to image/x-test'))
-        key, software_agent = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.History[1]/stEvt:softwareAgent')
-        self.assert_correct_software_agent(software_agent)
-        key, event_date = pop()
-        self.assertEqual((key, event_date), ('Xmp.xmpMM.History[1]/stEvt:when', modify_date))
-        # - InstanceID:
-        key, instance_id = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.InstanceID')
-        self.assert_uuid_urn(instance_id)
-        self.assertEqual(instance_id, event_instance_id)
-        try:
-            line = pop()
-        except StopIteration:
-            line = None
-        self.assertIsNone(line)
+            # Dublin Core:
+            self.assertEqual(pop(), ('Xmp.dc.format', 'image/x-test'))
+            # Internal properties:
+            self.assertEqual(pop(), ('Xmp.didjvu.test_bool', 'True'))
+            self.assertEqual(pop(), ('Xmp.didjvu.test_int', '42'))
+            self.assertEqual(pop(), ('Xmp.didjvu.test_str', 'eggs'))
+            # XMP:
+            key, metadata_date = pop()
+            self.assert_rfc3339_timestamp(metadata_date)
+            self.assertEqual(key, 'Xmp.xmp.MetadataDate')
+            key, modify_date = pop()
+            self.assertEqual(key, 'Xmp.xmp.ModifyDate')
+            self.assert_rfc3339_timestamp(modify_date)
+            self.assertEqual(metadata_date, modify_date)
+            # XMP Media Management:
+            # - DocumentID:
+            key, document_id = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.DocumentID')
+            self.assert_uuid_urn(document_id)
+            # - History:
+            self.assertEqual(pop(), ('Xmp.xmpMM.History', 'type="Seq"'))
+            # - History[1]:
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[1]', 'type="Struct"'))
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:action', 'converted'))
+            key, event_instance_id = pop()
+            self.assert_uuid_urn(event_instance_id)
+            self.assertEqual(key, 'Xmp.xmpMM.History[1]/stEvt:instanceID')
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:parameters', 'to image/x-test'))
+            key, software_agent = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.History[1]/stEvt:softwareAgent')
+            self.assert_correct_software_agent(software_agent)
+            key, event_date = pop()
+            self.assertEqual((key, event_date), ('Xmp.xmpMM.History[1]/stEvt:when', modify_date))
+            # - InstanceID:
+            key, instance_id = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.InstanceID')
+            self.assert_uuid_urn(instance_id)
+            self.assertEqual(instance_id, event_instance_id)
+            try:
+                line = pop()
+            except StopIteration:
+                line = None
+            self.assertIsNone(line)
 
     def _test_new_libxmp(self, xmp_file, exception=None):
         if exception is not None:
@@ -340,73 +346,73 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
     def _test_updated_exiv2(self, xmp_file, exception=None):
         if exception is not None:
             raise exception
-        output = self.run_exiv2(xmp_file.name)
 
-        def pop():
-            return tuple(next(output).rstrip('\n').split(None, 1))
+        with self.run_exiv2(xmp_file.name) as output:
+            def pop():
+                return tuple(next(output).rstrip('\n').split(None, 1))
 
-        # Dublin Core:
-        self.assertEqual(pop(), ('Xmp.dc.format', 'image/x-test'))
-        # Internal properties:
-        self.assertEqual(pop(), ('Xmp.didjvu.test_bool', 'True'))
-        self.assertEqual(pop(), ('Xmp.didjvu.test_int', '42'))
-        self.assertEqual(pop(), ('Xmp.didjvu.test_str', 'eggs'))
-        # TIFF:
-        self.assertEqual(pop(), ('Xmp.tiff.ImageHeight', '42'))
-        self.assertEqual(pop(), ('Xmp.tiff.ImageWidth', '69'))
-        # XMP:
-        key, create_date = pop()
-        self.assertEqual((key, create_date), ('Xmp.xmp.CreateDate', self._original_create_date))
-        self.assertEqual(pop(), ('Xmp.xmp.CreatorTool', self._original_software_agent))
-        key, metadata_date = pop()
-        self.assertEqual(key, 'Xmp.xmp.MetadataDate')
-        self.assert_rfc3339_timestamp(metadata_date)
-        key, modify_date = pop()
-        self.assertEqual(key, 'Xmp.xmp.ModifyDate')
-        self.assert_rfc3339_timestamp(modify_date)
-        self.assertEqual(metadata_date, modify_date)
-        # XMP Media Management:
-        # - DocumentID:
-        key, document_id = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.DocumentID')
-        self.assert_uuid_urn(document_id)
-        self.assertNotEqual(document_id, self._original_document_id)
-        # - History:
-        self.assertEqual(pop(), ('Xmp.xmpMM.History', 'type="Seq"'))
-        # - History[1]:
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[1]', 'type="Struct"'))
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:action', 'created'))
-        key, original_instance_id = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.History[1]/stEvt:instanceID')
-        self.assertEqual(original_instance_id, self._original_instance_id)
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:softwareAgent', self._original_software_agent))
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:when', create_date))
-        # - History[2]:
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[2]', 'type="Struct"'))
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[2]/stEvt:action', 'converted'))
-        key, event_instance_id = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.History[2]/stEvt:instanceID')
-        self.assert_uuid_urn(event_instance_id)
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[2]/stEvt:parameters', 'from image/png to image/x-test'))
-        key, software_agent = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.History[2]/stEvt:softwareAgent')
-        self.assert_correct_software_agent(software_agent)
-        self.assertEqual(pop(), ('Xmp.xmpMM.History[2]/stEvt:when', metadata_date))
-        # - InstanceID:
-        key, instance_id = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.InstanceID')
-        self.assert_uuid_urn(instance_id)
-        self.assertEqual(instance_id, event_instance_id)
-        self.assertNotEqual(instance_id, original_instance_id)
-        # - OriginalDocumentID:
-        key, original_document_id = pop()
-        self.assertEqual(key, 'Xmp.xmpMM.OriginalDocumentID')
-        self.assertEqual(original_document_id, self._original_document_id)
-        try:
-            line = pop()
-        except StopIteration:
-            line = None
-        self.assertIsNone(line)
+            # Dublin Core:
+            self.assertEqual(pop(), ('Xmp.dc.format', 'image/x-test'))
+            # Internal properties:
+            self.assertEqual(pop(), ('Xmp.didjvu.test_bool', 'True'))
+            self.assertEqual(pop(), ('Xmp.didjvu.test_int', '42'))
+            self.assertEqual(pop(), ('Xmp.didjvu.test_str', 'eggs'))
+            # TIFF:
+            self.assertEqual(pop(), ('Xmp.tiff.ImageHeight', '42'))
+            self.assertEqual(pop(), ('Xmp.tiff.ImageWidth', '69'))
+            # XMP:
+            key, create_date = pop()
+            self.assertEqual((key, create_date), ('Xmp.xmp.CreateDate', self._original_create_date))
+            self.assertEqual(pop(), ('Xmp.xmp.CreatorTool', self._original_software_agent))
+            key, metadata_date = pop()
+            self.assertEqual(key, 'Xmp.xmp.MetadataDate')
+            self.assert_rfc3339_timestamp(metadata_date)
+            key, modify_date = pop()
+            self.assertEqual(key, 'Xmp.xmp.ModifyDate')
+            self.assert_rfc3339_timestamp(modify_date)
+            self.assertEqual(metadata_date, modify_date)
+            # XMP Media Management:
+            # - DocumentID:
+            key, document_id = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.DocumentID')
+            self.assert_uuid_urn(document_id)
+            self.assertNotEqual(document_id, self._original_document_id)
+            # - History:
+            self.assertEqual(pop(), ('Xmp.xmpMM.History', 'type="Seq"'))
+            # - History[1]:
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[1]', 'type="Struct"'))
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:action', 'created'))
+            key, original_instance_id = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.History[1]/stEvt:instanceID')
+            self.assertEqual(original_instance_id, self._original_instance_id)
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:softwareAgent', self._original_software_agent))
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[1]/stEvt:when', create_date))
+            # - History[2]:
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[2]', 'type="Struct"'))
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[2]/stEvt:action', 'converted'))
+            key, event_instance_id = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.History[2]/stEvt:instanceID')
+            self.assert_uuid_urn(event_instance_id)
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[2]/stEvt:parameters', 'from image/png to image/x-test'))
+            key, software_agent = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.History[2]/stEvt:softwareAgent')
+            self.assert_correct_software_agent(software_agent)
+            self.assertEqual(pop(), ('Xmp.xmpMM.History[2]/stEvt:when', metadata_date))
+            # - InstanceID:
+            key, instance_id = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.InstanceID')
+            self.assert_uuid_urn(instance_id)
+            self.assertEqual(instance_id, event_instance_id)
+            self.assertNotEqual(instance_id, original_instance_id)
+            # - OriginalDocumentID:
+            key, original_document_id = pop()
+            self.assertEqual(key, 'Xmp.xmpMM.OriginalDocumentID')
+            self.assertEqual(original_document_id, self._original_document_id)
+            try:
+                line = pop()
+            except StopIteration:
+                line = None
+            self.assertIsNone(line)
 
     def _test_updated_libxmp(self, xmp_file, exception=None):
         if exception is not None:
