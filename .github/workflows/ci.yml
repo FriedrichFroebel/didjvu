@@ -113,6 +113,18 @@ jobs:
       run:
         python -m pip install python-xmp-toolkit
       if: ${{ matrix.python != '3.12-dev' }}
+    - name: install python-xml-toolkit
+      run: |
+        mkdir -p deps/
+        python -m pip download --dest deps --no-binary python-xmp-toolkit --no-deps python-xmp-toolkit
+        cd deps
+        mkdir -p python-xmp-toolkit/
+        tar -xvzf python-xmp-toolkit-* --strip-components=1 -C python-xmp-toolkit
+        cd python-xmp-toolkit
+        sed -i 's/from distutils.version import LooseVersion//' libxmp/version.py
+        sed -i 's/VERSION_TUPLE = LooseVersion(VERSION).version/VERSION_TUPLE = tuple(map(int, VERSION.split(".")))/' libxmp/version.py
+        pip install .
+      if: ${{ matrix.python == '3.12-dev' }}
     # `libboost-python-dev` cannot be used, as this only works with the Python version shipped by the system.
     # This means that for Ubuntu 20.04 each Python version different from 3.8 fails with something like
     # `cannot find -lboost_python39` when installing Boost.Python through the system package manager.
