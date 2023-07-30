@@ -25,6 +25,11 @@ option:
 
 * GExiv2_ (≥ 0.12.2) + PyGI_ or
 * python-xmp-toolkit_ or
+
+  + Due to the repository being archived, this backend might lead to issues.
+    Starting at Python 3.12, *distutils* is not available anymore, thus breaking
+    the (default) installation.
+
 * py3exiv2_
 
 .. _Python:
