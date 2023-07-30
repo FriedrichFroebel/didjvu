@@ -107,9 +107,12 @@ jobs:
     - name: install package
       run: |
         python -m pip install .[dev,docs]
+    # Package breaks for Python 3.12 and has been archived anyway.
+    # Corresponding issue: https://github.com/python-xmp-toolkit/python-xmp-toolkit/issues/90
     - name: install python-xml-toolkit
       run:
         python -m pip install python-xmp-toolkit
+      if: ${{ matrix.python != '3.12-dev' }}
     # `libboost-python-dev` cannot be used, as this only works with the Python version shipped by the system.
     # This means that for Ubuntu 20.04 each Python version different from 3.8 fails with something like
     # `cannot find -lboost_python39` when installing Boost.Python through the system package manager.
