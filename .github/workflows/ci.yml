@@ -133,7 +133,7 @@ jobs:
     #    * https://www.boost.org/doc/libs/release/more/getting_started/unix-variants.html
     - name: install Boost.Python
       run: |
-        mkdir deps
+        mkdir -p deps
         wget $BOOST_URL -O deps/boost.tar.gz
         cd deps
         tar -xzf boost.tar.gz
