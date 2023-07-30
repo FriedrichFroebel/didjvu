@@ -28,6 +28,8 @@ jobs:
           gamera: master
         - python: '3.11'
           gamera: master
+        - python: '3.12-dev'
+          gamera: master
     runs-on: ubuntu-latest
     name: Python ${{ matrix.python }} with Gamera ${{ matrix.gamera }}
     steps:
