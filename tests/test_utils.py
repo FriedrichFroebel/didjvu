@@ -32,7 +32,7 @@ class EnhanceImportTestCase(TestCase):
             with self.assertRaises(expected_exception=ImportError) as exception_manager:
                 try:
                     # noinspection PyUnresolvedReferences
-                    import nonexistent
+                    import nonexistent  # type: ignore[import]
                 except ImportError as exception:
                     utils.enhance_import_error(
                         exception,
