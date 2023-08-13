@@ -125,8 +125,8 @@ def _chunk_order(key):
 
 
 class Multichunk:
-    _chunk_names = 'Sjbz Smmr BG44 BGjp BG2k FGbz FG44 FGjp FG2k INCL Djbz'
-    _chunk_names = {x.lower(): x for x in _chunk_names.split()}
+    _chunk_names_string = 'Sjbz Smmr BG44 BGjp BG2k FGbz FG44 FGjp FG2k INCL Djbz'
+    _chunk_names = {x.lower(): x for x in _chunk_names_string.split()}
     _info_re = re.compile(r' (\d+)x(\d+),.* (\d+) dpi,').search
 
     def __init__(self, width=None, height=None, dpi=None, **chunks):
