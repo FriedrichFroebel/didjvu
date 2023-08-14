@@ -7,14 +7,12 @@ class image_mean(PluginFunction):
     return_type: Incomplete
     self_type: Incomplete
     def __call__(self): ...
-    __call__: Incomplete
 
 class image_variance(PluginFunction):
     category: str
     return_type: Incomplete
     self_type: Incomplete
     def __call__(self): ...
-    __call__: Incomplete
 
 class mean_filter(PluginFunction):
     category: str
@@ -23,7 +21,6 @@ class mean_filter(PluginFunction):
     args: Incomplete
     doc_examples: Incomplete
     def __call__(self, region_size: int = ...): ...
-    __call__: Incomplete
 
 class variance_filter(PluginFunction):
     category: str
@@ -31,7 +28,6 @@ class variance_filter(PluginFunction):
     self_type: Incomplete
     args: Incomplete
     def __call__(self, means, region_size: int = ...): ...
-    __call__: Incomplete
 
 class wiener_filter(PluginFunction):
     category: str
@@ -40,7 +36,6 @@ class wiener_filter(PluginFunction):
     args: Incomplete
     doc_examples: Incomplete
     def __call__(self, region_size: int = ..., noise_variance: int = ...): ...
-    __call__: Incomplete
 
 class niblack_threshold(PluginFunction):
     return_type: Incomplete
@@ -48,7 +43,6 @@ class niblack_threshold(PluginFunction):
     args: Incomplete
     doc_examples: Incomplete
     def __call__(self, region_size: int = ..., sensitivity: float = ..., lower_bound: int = ..., upper_bound: int = ...): ...
-    __call__: Incomplete
 
 class sauvola_threshold(PluginFunction):
     return_type: Incomplete
@@ -56,7 +50,6 @@ class sauvola_threshold(PluginFunction):
     args: Incomplete
     doc_examples: Incomplete
     def __call__(self, region_size: int = ..., sensitivity: float = ..., dynamic_range: int = ..., lower_bound: int = ..., upper_bound: int = ...): ...
-    __call__: Incomplete
 
 class gatos_background(PluginFunction):
     category: str
@@ -64,14 +57,12 @@ class gatos_background(PluginFunction):
     self_type: Incomplete
     args: Incomplete
     def __call__(self, binarization, region_size: int = ...): ...
-    __call__: Incomplete
 
 class gatos_threshold(PluginFunction):
     return_type: Incomplete
     self_type: Incomplete
     args: Incomplete
     def __call__(self, background, binarization, q: float = ..., p1: float = ..., p2: float = ...): ...
-    __call__: Incomplete
 
 class white_rohrer_threshold(PluginFunction):
     return_type: Incomplete
@@ -80,7 +71,6 @@ class white_rohrer_threshold(PluginFunction):
     author: str
     doc_examples: Incomplete
     def __call__(self, x_lookahead: int = ..., y_lookahead: int = ..., bias_mode: int = ..., bias_factor: int = ..., f_factor: int = ..., g_factor: int = ...): ...
-    __call__: Incomplete
 
 class shading_subtraction(PluginFunction):
     author: str
@@ -90,7 +80,6 @@ class shading_subtraction(PluginFunction):
     pure_python: bool
     doc_examples: Incomplete
     def __call__(self, k: int = ..., threshold: Incomplete | None = ...): ...
-    __call__: Incomplete
 
 class brink_threshold(PluginFunction):
     author: str
@@ -98,7 +87,6 @@ class brink_threshold(PluginFunction):
     return_type: Incomplete
     doc_examples: Incomplete
     def __call__(self): ...
-    __call__: Incomplete
 
 class BinarizationGenerator(PluginModule):
     category: str

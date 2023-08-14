@@ -10,13 +10,11 @@ class from_pil(PluginFunction):
     args: Incomplete
     pure_python: bool
     def __call__(image, offset: Incomplete | None = ...): ...
-    __call__: Incomplete
 
 class to_pil(PluginFunction):
     self_type: Incomplete
     return_type: Incomplete
     def __call__(image): ...
-    __call__: Incomplete
     def __doc_example1__(images): ...
     def __doc_example2__(images): ...
     doc_examples: Incomplete

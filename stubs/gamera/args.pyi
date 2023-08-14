@@ -1,6 +1,7 @@
 from types import *
 from . import paths as paths, util as util
 from _typeshed import Incomplete
+from typing import Any
 from gamera.gui import has_gui as has_gui
 
 DEFAULT_MAX_ARG_NUMBER: int
@@ -27,7 +28,7 @@ class CNoneDefault: ...
 NoneDefault: Incomplete
 
 class Arg:
-    default: int
+    default: Any
     length: int
     name: Incomplete
     has_default: bool
