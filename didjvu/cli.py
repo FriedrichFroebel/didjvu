@@ -22,11 +22,12 @@ import functools
 from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
 from didjvu import djvu_support
+from didjvu import gamera_support
 from didjvu import version
 from didjvu import xmp
 
 
-def range_int(x: Union[int, str], y: Union[int, str], typename: str) -> Type:
+def range_int(x: int, y: int, typename: str) -> Type:
     class RangeInt(int):
         def __new__(cls, value: Union[int, str]):
             n = int(value)
@@ -94,7 +95,7 @@ def replace_underscores(s: str) -> str:
     return s.replace('_', '-')
 
 
-def _get_method_parameters_help(methods: Dict[str, Callable]) -> str:  # type: ignore[attr-defined]
+def _get_method_parameters_help(methods: Dict[str, gamera_support.PluginFunction]) -> str:
     result = ['binarization methods and their parameters:']
     for name, method in sorted(methods.items()):
         result += ['  ' + name]
