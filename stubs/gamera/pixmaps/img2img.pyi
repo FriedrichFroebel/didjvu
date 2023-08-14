@@ -1,0 +1,6 @@
+from _typeshed import Incomplete
+
+app: Incomplete
+
+def convert(file, maskClr, outputDir, outputName, outType, outExt): ...
+def main(args, outType, outExt, doc) -> None: ...

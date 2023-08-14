@@ -1,0 +1,83 @@
+from gamera.core import *
+import wx.py
+from _typeshed import Incomplete
+from gamera import paths as paths, util as util
+from gamera.config import config as config
+from gamera.gui import classifier_display as classifier_display, compat_wx as compat_wx, gamera_display as gamera_display, gui_util as gui_util, has_gui as has_gui, icon_display as icon_display, image_browser as image_browser, image_menu as image_menu, var_name as var_name
+
+main_win: Incomplete
+app: Incomplete
+
+class GameraGui:
+    def GetImageFilename(): ...
+    GetImageFilename: Incomplete
+    def ShowImage(image, title, view_function: Incomplete | None = ..., owner: Incomplete | None = ...): ...
+    ShowImage: Incomplete
+    def ShowImages(list, view_function: Incomplete | None = ...): ...
+    ShowImages: Incomplete
+    def ShowHistogram(hist, mark: Incomplete | None = ...) -> None: ...
+    ShowHistogram: Incomplete
+    def ShowProjections(x_data, y_data, image) -> None: ...
+    ShowProjections: Incomplete
+    def ShowClassifier(classifier: Incomplete | None = ..., current_database=..., image: Incomplete | None = ..., symbol_table=...): ...
+    ShowClassifier: Incomplete
+    def UpdateIcons() -> None: ...
+    UpdateIcons: Incomplete
+    def TopLevel(): ...
+    TopLevel: Incomplete
+    def ProgressBox(message, length: int = ..., numsteps: int = ...): ...
+    ProgressBox: Incomplete
+Calltip = compat_wx.Calltip
+
+class PyShellGameraShell(wx.py.shell.Shell):
+    update: Incomplete
+    locals: Incomplete
+    autoCallTip: bool
+    def __init__(self, *args, **kwargs) -> None: ...
+    def addHistory(self, command) -> None: ...
+    def push(self, source) -> None: ...
+    def OnKeyDown(self, event) -> None: ...
+    def GetLocals(self): ...
+
+class PyCrustGameraShell(wx.py.crust.Crust):
+    shell: Incomplete
+    editor: Incomplete
+    notebook: Incomplete
+    filling: Incomplete
+    calltip: Incomplete
+    sessionlisting: Incomplete
+    def __init__(self, parent, id: int = ..., pos=..., size=..., style: int = ..., name: str = ..., rootObject: Incomplete | None = ..., rootLabel: Incomplete | None = ..., rootIsNamespace: bool = ..., intro: str = ..., locals: Incomplete | None = ..., InterpClass: Incomplete | None = ..., *args, **kwds) -> None: ...
+
+class ShellFrame(wx.Frame):
+    known_modules: Incomplete
+    menu: Incomplete
+    icon_display: Incomplete
+    shell: Incomplete
+    filling: Incomplete
+    calltip: Incomplete
+    sessionlisting: Incomplete
+    status: Incomplete
+    def __init__(self, parent, id, title) -> None: ...
+    def import_command_line_modules(self) -> None: ...
+    custom_menus: Incomplete
+    import_toolkits: Incomplete
+    reload_toolkits: Incomplete
+    toolkit_menus: Incomplete
+    def make_menu(self): ...
+    def add_custom_menu(self, name, menu) -> None: ...
+    def add_custom_icon_description(self, icon_description) -> None: ...
+    def Update(self) -> None: ...
+
+class CustomMenu:
+    is_custom_menu: int
+    shell: Incomplete
+    locals: Incomplete
+    def __init__(self) -> None: ...
+
+class StatusBar(wx.StatusBar):
+    def __init__(self, parent) -> None: ...
+
+class GameraSplash(compat_wx.SplashScreen):
+    def __init__(self) -> None: ...
+
+def run(startup=...): ...
