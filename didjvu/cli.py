@@ -19,19 +19,21 @@ didjvu's command-line interface
 
 import argparse
 import functools
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from didjvu import djvu_support
 from didjvu import version
 from didjvu import xmp
 
 
-def range_int(x, y, typename):
+def range_int(x: Union[int, str], y: Union[int, str], typename: str) -> Type:
     class RangeInt(int):
-        def __new__(cls, n):
+        def __new__(cls, n: Union[int, str]) -> int:
             n = int(n)
             if not (x <= n <= y):
                 raise ValueError
             return n
+
     return type(typename, (RangeInt,), {})
 
 
@@ -40,8 +42,8 @@ LOSS_LEVEL_TYPE = range_int(djvu_support.LOSS_LEVEL_MIN, djvu_support.LOSS_LEVEL
 SUBSAMPLE_TYPE = range_int(djvu_support.SUBSAMPLE_MIN, djvu_support.SUBSAMPLE_MAX, 'subsample')
 
 
-def slice_type(max_slices=djvu_support.IW44_N_SLICES_MAX):
-    def slices(value):
+def slice_type(max_slices: int = djvu_support.IW44_N_SLICES_MAX) -> Callable[[str], int]:
+    def slices(value: str):
         result = []
         if ',' in value:
             previous_slice = 0
@@ -68,11 +70,12 @@ def slice_type(max_slices=djvu_support.IW44_N_SLICES_MAX):
         if len(result) > max_slices:
             raise ValueError('too many slices')
         return result
+
     return slices
 
 
-def get_slice_repr(lst):
-    def fold(inner_list, obj):
+def get_slice_repr(lst: List[int]) -> str:
+    def fold(inner_list: List[int], obj: int):
         return inner_list + [obj - sum(inner_list)]
 
     plus_list = functools.reduce(fold, lst[1:], lst[:1])
@@ -80,18 +83,18 @@ def get_slice_repr(lst):
 
 
 class Intact:
-    def __init__(self, x):
+    def __init__(self, x: Any):
         self.x = x
 
-    def __call__(self):
+    def __call__(self) -> Any:
         return self.x
 
 
-def replace_underscores(s):
+def replace_underscores(s: str) -> str:
     return s.replace('_', '-')
 
 
-def _get_method_parameters_help(methods):
+def _get_method_parameters_help(methods: Dict[str, Callable]) -> str:
     result = ['binarization methods and their parameters:']
     for name, method in sorted(methods.items()):
         result += ['  ' + name]
@@ -132,7 +135,7 @@ class ArgumentParser(argparse.ArgumentParser):
         background_crcb = djvu_support.CRCB.normal
         background_subsample = 3
 
-    def __init__(self, methods, default_method, prog=None):
+    def __init__(self, methods: Dict[str, Callable], default_method: str, prog: Optional[str] = None):
         super(ArgumentParser, self).__init__(formatter_class=argparse.RawDescriptionHelpFormatter, prog=prog)
         self.add_argument('--version', action=version.VersionAction)
         parser_separate = self.add_subparser('separate', help='generate masks for images')
@@ -249,7 +252,7 @@ class ArgumentParser(argparse.ArgumentParser):
         self.epilog = 'more help:\n  ' + '\n  '.join(epilog)
         self.__methods = methods
 
-    def add_subparser(self, name, **kwargs):
+    def add_subparser(self, name: str, **kwargs) -> argparse.ArgumentParser:
         try:
             # noinspection PyUnresolvedReferences
             self.__subparsers
@@ -262,9 +265,9 @@ class ArgumentParser(argparse.ArgumentParser):
         parser.set_defaults(_action_=name)
         return parser
 
-    def _parse_parameters(self, options):
+    def _parse_parameters(self, options: argparse.Namespace) -> Dict[str, Any]:
         result = dict()
-        for parameter in options.params or ():
+        for parameter in options.params:
             if '=' not in parameter:
                 if parameter.isdigit() and len(options.method.args) == 1:
                     [parameter_name] = options.method.args
@@ -297,7 +300,7 @@ class ArgumentParser(argparse.ArgumentParser):
         return result
 
     # noinspection PyMethodOverriding
-    def parse_arguments(self, actions):
+    def parse_arguments(self, actions: List[argparse.Action]) -> Any:
         options = argparse.ArgumentParser.parse_args(self)
         if not hasattr(options, 'fg_bg_defaults'):
             import sys
@@ -336,7 +339,9 @@ class ArgumentParser(argparse.ArgumentParser):
         return action(options)
 
 
-def dump_options(options, multi_page=False):
+def dump_options(
+        options: argparse.Namespace, multi_page: bool = False
+) -> Generator[Tuple[str, Any], None, None]:
     method_name = options.method.name
     if options.params:
         method_name += ' '
