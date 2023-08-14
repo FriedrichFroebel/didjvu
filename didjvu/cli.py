@@ -19,7 +19,7 @@ didjvu's command-line interface
 
 import argparse
 import functools
-from typing import Any, Callable, cast, Dict, Generator, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
 
 from didjvu import djvu_support
 from didjvu import version
@@ -28,8 +28,8 @@ from didjvu import xmp
 
 def range_int(x: Union[int, str], y: Union[int, str], typename: str) -> Type:
     class RangeInt(int):
-        def __new__(cls, n: Union[int, str]):
-            n = cast(int, int(n))
+        def __new__(cls, value: Union[int, str]):
+            n = int(value)
             if not (x <= n <= y):
                 raise ValueError
             return n
@@ -47,25 +47,25 @@ def slice_type(max_slices: int = djvu_support.IW44_N_SLICES_MAX) -> Callable[[st
         result = []
         if ',' in value:
             previous_slice = 0
-            for slice_ in value.split(','):
-                slice_ = cast(int, int(slice_))
-                if slice_ <= previous_slice:
+            for slice_value_string in value.split(','):
+                slice_value = int(slice_value_string)
+                if slice_value <= previous_slice:
                     raise ValueError('non-increasing slice value')
-                result += [slice_]
-                previous_slice = slice_
+                result += [slice_value]
+                previous_slice = slice_value
         elif '+' in value:
-            slice_ = 0
-            for slice_increase in value.split('+'):
-                slice_increase = int(slice_increase)
+            slice_value = 0
+            for slice_increase_string in value.split('+'):
+                slice_increase = int(slice_increase_string)
                 if slice_increase <= 0:
                     raise ValueError('non-increasing slice value')
                 slice_ += slice_increase
-                result += [slice_]
+                result += [slice_value]
         else:
-            slice_ = cast(int, int(value))
-            if slice_ < 0:
+            slice_value = int(value)
+            if slice_value < 0:
                 raise ValueError('invalid slice value')
-            result = [slice_]
+            result = [slice_value]
         assert len(result) > 0
         if len(result) > max_slices:
             raise ValueError('too many slices')
