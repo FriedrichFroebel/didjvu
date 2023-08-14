@@ -59,7 +59,7 @@ def slice_type(max_slices: int = djvu_support.IW44_N_SLICES_MAX) -> Callable[[st
                 slice_increase = int(slice_increase_string)
                 if slice_increase <= 0:
                     raise ValueError('non-increasing slice value')
-                slice_ += slice_increase
+                slice_value += slice_increase
                 result += [slice_value]
         else:
             slice_value = int(value)
