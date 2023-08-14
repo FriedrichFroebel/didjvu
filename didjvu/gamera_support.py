@@ -53,7 +53,7 @@ from gamera import __version__ as version  # noqa: E402
 from gamera.core import load_image as _load_image  # noqa: E402
 from gamera.core import init_gamera as _init  # noqa: E402
 from gamera.core import Image, RGB, GREYSCALE, ONEBIT, Point, Dim, RGBPixel  # noqa: E402
-from gamera.plugins import PluginFunction  # noqa: F401
+from gamera.plugin import PluginFunction  # noqa: F401
 from gamera.plugins.pil_io import from_pil as _from_pil  # noqa: E402
 import gamera.args  # noqa: E402
 
