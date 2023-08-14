@@ -94,7 +94,7 @@ def replace_underscores(s: str) -> str:
     return s.replace('_', '-')
 
 
-def _get_method_parameters_help(methods: Dict[str, Callable) -> str:  # type: ignore[attr-defined]
+def _get_method_parameters_help(methods: Dict[str, Callable]) -> str:  # type: ignore[attr-defined]
     result = ['binarization methods and their parameters:']
     for name, method in sorted(methods.items()):
         result += ['  ' + name]
