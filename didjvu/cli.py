@@ -19,7 +19,7 @@ didjvu's command-line interface
 
 import argparse
 import functools
-from typing import Any, Callable, Dict, Generator, List, Optional, Tuple, Type, Union
+from typing import Any, Callable, cast, Dict, Generator, List, Optional, Tuple, Type, Union
 
 from didjvu import djvu_support
 from didjvu import version
@@ -28,8 +28,8 @@ from didjvu import xmp
 
 def range_int(x: Union[int, str], y: Union[int, str], typename: str) -> Type:
     class RangeInt(int):
-        def __new__(cls, n: Union[int, str]) -> int:
-            n = int(n)
+        def __new__(cls, n: Union[int, str]):
+            n = cast(int, int(n))
             if not (x <= n <= y):
                 raise ValueError
             return n
@@ -48,7 +48,7 @@ def slice_type(max_slices: int = djvu_support.IW44_N_SLICES_MAX) -> Callable[[st
         if ',' in value:
             previous_slice = 0
             for slice_ in value.split(','):
-                slice_ = int(slice_)
+                slice_ = cast(int, int(slice_))
                 if slice_ <= previous_slice:
                     raise ValueError('non-increasing slice value')
                 result += [slice_]
@@ -62,7 +62,7 @@ def slice_type(max_slices: int = djvu_support.IW44_N_SLICES_MAX) -> Callable[[st
                 slice_ += slice_increase
                 result += [slice_]
         else:
-            slice_ = int(value)
+            slice_ = cast(int, int(value))
             if slice_ < 0:
                 raise ValueError('invalid slice value')
             result = [slice_]
@@ -94,7 +94,7 @@ def replace_underscores(s: str) -> str:
     return s.replace('_', '-')
 
 
-def _get_method_parameters_help(methods: Dict[str, Callable]) -> str:
+def _get_method_parameters_help(methods: Dict[str, Callable) -> str:  # type: ignore[attr-defined]
     result = ['binarization methods and their parameters:']
     for name, method in sorted(methods.items()):
         result += ['  ' + name]
@@ -255,7 +255,7 @@ class ArgumentParser(argparse.ArgumentParser):
     def add_subparser(self, name: str, **kwargs) -> argparse.ArgumentParser:
         try:
             # noinspection PyUnresolvedReferences
-            self.__subparsers
+            self.__subparsers  # type: ignore[has-type]
         except AttributeError:
             # noinspection PyAttributeOutsideInit
             self.__subparsers = self.add_subparsers(parser_class=argparse.ArgumentParser)
