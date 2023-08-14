@@ -19,7 +19,7 @@ didjvu's command-line interface
 
 import argparse
 import functools
-from typing import Any, Callable, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, Generator, List, Optional, Type, Union
 
 from didjvu import djvu_support
 from didjvu import version
