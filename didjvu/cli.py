@@ -267,7 +267,7 @@ class ArgumentParser(argparse.ArgumentParser):
 
     def _parse_parameters(self, options: argparse.Namespace) -> Dict[str, Any]:
         result = dict()
-        for parameter in options.params:
+        for parameter in options.params or ():
             if '=' not in parameter:
                 if parameter.isdigit() and len(options.method.args) == 1:
                     [parameter_name] = options.method.args
