@@ -136,7 +136,9 @@ class ArgumentParser(argparse.ArgumentParser):
         background_crcb = djvu_support.CRCB.normal
         background_subsample = 3
 
-    def __init__(self, methods: Dict[str, Callable], default_method: str, prog: Optional[str] = None):
+    def __init__(
+            self, methods: Dict[str, gamera_support.PluginFunction], default_method: str, prog: Optional[str] = None
+    ):
         super(ArgumentParser, self).__init__(formatter_class=argparse.RawDescriptionHelpFormatter, prog=prog)
         self.add_argument('--version', action=version.VersionAction)
         parser_separate = self.add_subparser('separate', help='generate masks for images')
