@@ -38,6 +38,8 @@ setup(
             'coverage',
             'flake8',
             'pep8-naming',
+            'mypy',
+            'types-Pillow',
         ],
         'docs': [
             'docutils',
