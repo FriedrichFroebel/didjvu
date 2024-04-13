@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
 # Copyright © 2012-2015 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -64,6 +63,3 @@ class TimezonesTestCase(TestCase):
                     timezone=timezone,
                     expected=expected
                 )
-
-
-# vim:ts=4 sts=4 sw=4 et

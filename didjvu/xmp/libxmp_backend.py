@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2012-2019 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2012-2024 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -22,6 +21,18 @@ import libxmp
 from didjvu import timestamp
 
 from didjvu.xmp import namespaces
+
+
+def _get_versions():
+    library = 'python-xmp-toolkit'
+    try:
+        version = libxmp.__version__
+    except AttributeError:
+        return library
+    return f'{library} {version}'
+
+
+versions = [_get_versions()]
 
 
 class XmpError(RuntimeError):
@@ -108,6 +119,7 @@ class MetadataBase:
         backend.parse_from_str(xmp)
 
 
-__all__ = ['MetadataBase']
-
-# vim:ts=4 sts=4 sw=4 et
+__all__ = [
+    'MetadataBase',
+    'versions',
+]

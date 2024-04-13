@@ -28,5 +28,3 @@ min-similarity-lines = 8
 max-line-length = 140
 expected-line-ending-format = LF
 
-# vim:ft=dosini ts=4 sts=4 sw=4 et
-

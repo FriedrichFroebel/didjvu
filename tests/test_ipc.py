@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2010-2017 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2010-2022 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -235,5 +234,3 @@ class RequireTestCase(TestCase):
             ipc.require(NON_EXISTENT_COMMAND)
         exception_message = f"[Errno {errno.ENOENT}] command not found: {NON_EXISTENT_COMMAND!r}"
         self.assertEqual(str(exception_manager.exception), exception_message)
-
-# vim:ts=4 sts=4 sw=4 et

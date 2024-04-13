@@ -192,5 +192,3 @@ jobs:
       run: |
         cd /
         man 1 didjvu | grep -A 10 -w DIDJVU
-
-# vim:ts=2 sts=2 sw=2 et

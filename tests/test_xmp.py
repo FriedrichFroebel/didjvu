@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
 # Copyright © 2012-2021 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -481,5 +480,3 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
         for backend in XMP_BACKENDS:
             with self.subTest(backend=backend):
                 self._test_io_error(backend)
-
-# vim:ts=4 sts=4 sw=4 et

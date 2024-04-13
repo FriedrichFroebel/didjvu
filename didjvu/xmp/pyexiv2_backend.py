@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2012-2021 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2012-2024 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -30,8 +29,19 @@ from didjvu import timestamp
 from didjvu.xmp import namespaces
 
 
+def _get_versions():
+    version = pyexiv2.__version__
+    yield f'pyexiv2 {version}'
+    version = pyexiv2.__exiv2_version__
+    yield f'+ Exiv2 {version}'
+
+
+versions = list(_get_versions())
+
+
 def xmp_register_namespace(prefix, uri):
     # Work-around for <https://bugs.debian.org/662878>
+    # ("pyexiv2.xmp.register_namespace() requires URI ending with /")
 
     class Namespace(str):
         def endswith(self, suffix, *args, **kwargs):
@@ -195,6 +205,7 @@ class MetadataBase:
         self._reload()
 
 
-__all__ = ['MetadataBase']
-
-# vim:ts=4 sts=4 sw=4 et
+__all__ = [
+    'MetadataBase',
+    'versions',
+]

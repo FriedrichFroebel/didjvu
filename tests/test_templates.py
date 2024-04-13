@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
 # Copyright © 2010-2015 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -85,5 +84,3 @@ class TemplatesTestCase(TestCase):
         self.assertEqual(result, 'eggs.2.1.djvu')
         result = templates.expand('{base-ext}.2.djvu', path, 0, memo)
         self.assertEqual(result, 'eggs.2.2.djvu')
-
-# vim:ts=4 sts=4 sw=4 et

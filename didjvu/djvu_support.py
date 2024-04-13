@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2009-2021 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2009-2022 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -367,5 +366,3 @@ __all__ = [
     'IW44_SLICES_DEFAULT',
     'CRCB',
 ]
-
-# vim:ts=4 sts=4 sw=4 et

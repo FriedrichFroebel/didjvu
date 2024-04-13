@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2012-2016 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2012-2024 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -43,6 +42,17 @@ except AttributeError:  # no coverage
     # GEXiv2 < 0.14.0
     # Might be dropped in April 2025 when Ubuntu 20.04 is EOL.
     GExiv2.Metadata.register_xmp_namespace(namespaces.didjvu, 'didjvu')
+
+
+def _get_versions():
+    yield f'PyGI {gi.__version__}'
+    version_int = GExiv2.get_version()
+    major_minor, patch = divmod(version_int, 100)
+    major, minor = divmod(major_minor, 100)
+    yield f'GExiv2 {major}.{minor}.{patch}'
+
+
+versions = list(_get_versions())
 
 
 class XmpError(RuntimeError):
@@ -120,6 +130,7 @@ class MetadataBase:
         self._read_data(data)
 
 
-__all__ = ['MetadataBase']
-
-# vim:ts=4 sts=4 sw=4 et
+__all__ = [
+    'MetadataBase',
+    'versions',
+]

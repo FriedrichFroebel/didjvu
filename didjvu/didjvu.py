@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
 # Copyright © 2009-2021 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -21,6 +20,7 @@ import itertools
 import logging
 import os
 import sys
+from typing import Any, Dict, Tuple
 
 from didjvu import cli
 from didjvu import djvu_support
@@ -34,18 +34,18 @@ from didjvu import utils
 from didjvu import xmp
 
 
-def setup_logging():
+def setup_logging() -> Tuple[logging.Logger, logging.Logger]:
     logger = logging.getLogger('didjvu.main')
     ipc_logger = logging.getLogger('didjvu.ipc')
-    logging.NOSY = (logging.INFO + logging.DEBUG) // 2
+    logging.NOSY = (logging.INFO + logging.DEBUG) // 2  # type: ignore[attr-defined]
     # noinspection PyUnresolvedReferences
-    assert logging.INFO > logging.NOSY > logging.DEBUG
+    assert logging.INFO > logging.NOSY > logging.DEBUG  # type: ignore[attr-defined]
 
-    def nosy(msg, *args, **kwargs):
+    def nosy(msg: str, *args: Any, **kwargs: Any):
         # noinspection PyUnresolvedReferences
-        logger.log(logging.NOSY, msg, *args, **kwargs)
+        logger.log(logging.NOSY, msg, *args, **kwargs)  # type: ignore[attr-defined]
 
-    logger.nosy = nosy
+    logger.nosy = nosy  # type: ignore[attr-defined]
     # Main handler:
     handler = logging.StreamHandler()
     formatter = logging.Formatter('%(message)s')
@@ -63,7 +63,7 @@ def setup_logging():
 LOGGER, IPC_LOGGER = setup_logging()
 
 
-def error(message, *args, **kwargs):
+def error(message: str, *args: Any, **kwargs: Any) -> None:
     if args or kwargs:
         message = message.format(*args, **kwargs)
     print(f'didjvu: error: {message}', file=sys.stderr)
@@ -452,14 +452,14 @@ class Main:
             bytes_in = 0
             pixels = [0]
             page_info = []
-            page_id_memo = {}
+            page_id_memo: Dict[str, int] = {}
             for page_number, (image_filename, mask_filename) in enumerate(zip(options.input, options.masks)):
                 page = utils.Namespace()
                 page_info += [page]
                 bytes_in += os.path.getsize(image_filename)
                 page.page_id = templates.expand(options.page_id_template, image_filename, page_number, page_id_memo)
                 try:
-                    djvu_support.validate_page_id(page.page_id)
+                    djvu_support.validate_page_id(page.page_id)  # type: ignore[attr-defined]
                 except ValueError as exception:
                     error(exception)
             del page  # quieten pyflakes
@@ -472,11 +472,11 @@ class Main:
                 options.masks,
                 itertools.repeat(pixels)
             )
-            [pixels] = pixels
+            [pixel_count] = pixels
             with temporary.directory() as minidjvu_out_dir:
                 LOGGER.info('creating shared dictionaries')
 
-                def chdir():
+                def chdir() -> None:
                     os.chdir(minidjvu_out_dir)
 
                 arguments = [
@@ -487,7 +487,7 @@ class Main:
                 if options.loss_level > 0:
                     arguments += ['--aggression', str(options.loss_level)]
                 assert len(page_info) > 1  # minidjvu won't create single-page indirect documents
-                arguments += [page.sjbz_symlink for page in page_info]
+                arguments += [page.sjbz_symlink for page in page_info]  # type: ignore[attr-defined]
                 index_filename = temporary.name(prefix='__index__.', suffix='.djvu', dir=minidjvu_out_dir)
                 index_filename = os.path.basename(index_filename)  # FIXME: Name conflicts are still possible!
                 arguments += [index_filename]
@@ -496,29 +496,27 @@ class Main:
                 component_filenames = []
                 for page_number, page in enumerate(page_info):
                     if page_number % options.pages_per_dict == 0:
-                        iff_name = fs.replace_ext(page_info[page_number].page_id, 'iff')
+                        iff_name = fs.replace_ext(page_info[page_number].page_id, 'iff')  # type: ignore[attr-defined]
                         iff_name = os.path.join(minidjvu_out_dir, iff_name)
                         component_filenames += [iff_name]
-                    sjbz_name = os.path.join(minidjvu_out_dir, page.page_id)
+                    sjbz_name = os.path.join(minidjvu_out_dir, page.page_id)  # type: ignore[attr-defined]
                     component_filenames += [sjbz_name]
-                    page.djvu['sjbz'] = sjbz_name
-                    page.djvu['incl'] = iff_name
-                    page.djvu = page.djvu.save()
-                    page.djvu_symlink = os.path.join(minidjvu_out_dir, page.page_id)
-                    os.unlink(page.djvu_symlink)
-                    os.symlink(page.djvu.name, page.djvu_symlink)
+                    page.djvu['sjbz'] = sjbz_name  # type: ignore[attr-defined]
+                    page.djvu['incl'] = iff_name  # type: ignore[attr-defined]
+                    page.djvu = page.djvu.save()  # type: ignore[attr-defined]
+                    page.djvu_symlink = os.path.join(minidjvu_out_dir, page.page_id)  # type: ignore[attr-defined]
+                    os.unlink(page.djvu_symlink)  # type: ignore[attr-defined]
+                    os.symlink(page.djvu.name, page.djvu_symlink)  # type: ignore[attr-defined]
                 LOGGER.info('bundling')
                 djvu_file = djvu_support.bundle_djvu(*component_filenames)
                 try:
                     bytes_out = fs.copy_file(djvu_file, output)
                 finally:
                     djvu_file.close()
-        bits_per_pixel = 8.0 * bytes_out / pixels
+        bits_per_pixel = 8.0 * bytes_out / pixel_count
         compression_info = format_compression_info(bytes_in, bytes_out, bits_per_pixel)
         # noinspection PyUnresolvedReferences
         LOGGER.nosy(compression_info)
 
 
 __all__ = ['Main']
-
-# vim:ts=4 sts=4 sw=4 et

@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2015 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2015-2024 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -85,15 +84,14 @@ class ToPilRgbTestCase(TestCase):
     def _test(self, filename):
         path = self.get_data_file(filename)
         self.assertTrue(os.path.exists(path))
-        in_image = Image.open(path)
-        self.addCleanup(in_image.close)
-        if in_image.mode != 'RGB':
-            in_image = in_image.convert('RGB')
-        self.assertEqual(in_image.mode, 'RGB')
-        gamera_support.init()
-        gamera_image = gamera_support.load_image(path)
-        out_image = gamera_support.to_pil_rgb(gamera_image)
-        self.assert_images_equal(in_image, out_image)
+        with Image.open(path) as in_image:
+            if in_image.mode != 'RGB':
+                in_image = in_image.convert('RGB')
+            self.assertEqual(in_image.mode, 'RGB')
+            gamera_support.init()
+            gamera_image = gamera_support.load_image(path)
+            out_image = gamera_support.to_pil_rgb(gamera_image)
+            self.assert_images_equal(in_image, out_image)
 
     def test_color(self):
         with silence_truncated_file_read_warnings():
@@ -106,21 +104,18 @@ class ToPilRgbTestCase(TestCase):
 class ToPil1bppTestCase(TestCase):
     def _test(self, filename):
         path = self.get_data_file(filename)
-        in_image = Image.open(path)
-        self.addCleanup(in_image.close)
-        if in_image.mode != '1':
-            in_image = in_image.convert('1')
-        self.assertEqual(in_image.mode, '1')
-        gamera_support.init()
-        gamera_image = gamera_support.load_image(path)
-        out_image = gamera_support.to_pil_1bpp(gamera_image)
-        out_image = out_image.convert('1')  # FIXME?
-        self.assert_images_equal(in_image, out_image)
+        with Image.open(path) as in_image:
+            if in_image.mode != '1':
+                in_image = in_image.convert('1')
+            self.assertEqual(in_image.mode, '1')
+            gamera_support.init()
+            gamera_image = gamera_support.load_image(path)
+            out_image = gamera_support.to_pil_1bpp(gamera_image)
+            out_image = out_image.convert('1')  # FIXME?
+            self.assert_images_equal(in_image, out_image)
 
     def test_grey(self):
         self._test('greyscale-packbits.tiff')
 
     def test_mono(self):
         self._test('onebit.png')
-
-# vim:ts=4 sts=4 sw=4 et

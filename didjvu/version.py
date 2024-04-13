@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2011-2019 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2011-2024 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -63,6 +62,15 @@ class VersionAction(argparse.Action):
                 # noinspection PyUnresolvedReferences
                 pil_version = gamera_support.PILImage.VERSION
         print(f'+ {pil_name} {pil_version}')
+
+        from didjvu import xmp
+        if xmp.backend:
+            for version in xmp.backend.versions:
+                prefix = '+'
+                if version[0] == '+':
+                    prefix = ' '
+                print(prefix, version)
+
         parser.exit()
 
 
@@ -71,5 +79,3 @@ __all__ = [
     '__version__',
     'get_software_agent',
 ]
-
-# vim:ts=4 sts=4 sw=4 et

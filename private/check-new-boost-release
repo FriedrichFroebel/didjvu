@@ -1,5 +1,20 @@
 #!/usr/bin/env python
 
+# Copyright © 2023-2024 FriedrichFroebel
+#
+# This file is part of didjvu.
+#
+# didjvu is free software; you can redistribute it and/or modify it
+# under the terms of the GNU General Public License version 2 as published by
+# the Free Software Foundation. If you like, you might use the
+# `check-new-boost-release` script under the terms of the MIT license as well, id
+# est this file can be considered "GPL-2.0-only OR MIT".
+#
+# didjvu is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+# or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License for
+# more details.
+
 import sys
 from dataclasses import dataclass
 from pathlib import Path

@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
 # Copyright © 2015 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -32,5 +31,3 @@ class FileTypeTestCase(TestCase):
         file_type = filetype.check(path)
         self.assertFalse(file_type.like(filetype.Djvu))
         self.assertFalse(file_type.like(filetype.DjvuSingle))
-
-# vim:ts=4 sts=4 sw=4 et

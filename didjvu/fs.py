@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
 # Copyright © 2009-2018 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -41,5 +40,3 @@ __all__ = [
     'copy_file',
     'replace_ext',
 ]
-
-# vim:ts=4 sts=4 sw=4 et

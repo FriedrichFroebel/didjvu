@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2015 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2015-2024 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -57,22 +56,24 @@ def ddjvu(djvu_file, fmt='ppm'):
 class BitonalToDjvuTestCase(TestCase):
     def test_bitonal_to_djvu(self):
         path = self.get_data_file('onebit.bmp')
-        in_image = Image.open(path)
-        djvu_file = djvu.bitonal_to_djvu(in_image)
-        out_image = ddjvu(djvu_file, fmt='pbm')
-        self.assert_images_equal(in_image, out_image)
+        with Image.open(path) as in_image:
+            djvu_file = djvu.bitonal_to_djvu(in_image)
+            out_image = ddjvu(djvu_file, fmt='pbm')
+            self.addCleanup(out_image.close)
+            self.assert_images_equal(in_image, out_image)
 
 
 class PhotoToDjvuTestCase(TestCase):
     def test_photo_to_djvu(self):
         path = self.get_data_file('ycbcr-jpeg.tiff')
         with silence_truncated_file_read_warnings():
-            in_image = Image.open(path)
-            in_image = in_image.convert('RGB')
-        mask_image = in_image.convert('1')
-        djvu_file = djvu.photo_to_djvu(in_image, mask_image=mask_image)
-        out_image = ddjvu(djvu_file, fmt='ppm')
-        self.assert_image_sizes_equal(in_image, out_image)
+            with Image.open(path) as in_image:
+                in_image = in_image.convert('RGB')
+                mask_image = in_image.convert('1')
+                djvu_file = djvu.photo_to_djvu(in_image, mask_image=mask_image)
+                out_image = ddjvu(djvu_file, fmt='ppm')
+                self.addCleanup(out_image.close)
+                self.assert_image_sizes_equal(in_image, out_image)
 
 
 class DjvuToIw44TestCase(TestCase):
@@ -81,7 +82,9 @@ class DjvuToIw44TestCase(TestCase):
         with open(path, mode='rb') as in_djvu:
             out_djvu = djvu.djvu_to_iw44(in_djvu)
             in_image = ddjvu(in_djvu, fmt='ppm')
+            self.addCleanup(in_image.close)
             out_image = ddjvu(out_djvu, fmt='ppm')
+            self.addCleanup(out_image.close)
             self.assert_image_sizes_equal(in_image, out_image)
             in_djvu.seek(0)
             in_data = in_djvu.read()
@@ -93,29 +96,31 @@ class DjvuToIw44TestCase(TestCase):
 class MultichunkTestCase(TestCase):
     def test_sjbz(self):
         path = self.get_data_file('onebit.bmp')
-        in_image = Image.open(path)
-        width, height = in_image.size
-        sjbz_path = self.get_data_file('onebit.djvu')
-        multichunk = djvu.Multichunk(width, height, 100, sjbz=sjbz_path)
-        djvu_file = multichunk.save()
-        out_image = ddjvu(djvu_file, fmt='pbm')
-        self.assert_images_equal(in_image, out_image)
+        with Image.open(path) as in_image:
+            width, height = in_image.size
+            sjbz_path = self.get_data_file('onebit.djvu')
+            multichunk = djvu.Multichunk(width, height, 100, sjbz=sjbz_path)
+            djvu_file = multichunk.save()
+            out_image = ddjvu(djvu_file, fmt='pbm')
+            self.addCleanup(out_image.close)
+            self.assert_images_equal(in_image, out_image)
 
     def test_incl(self):
         path = self.get_data_file('onebit.bmp')
-        in_image = Image.open(path)
-        width, height = in_image.size
-        sjbz_path = self.get_data_file('onebit.djvu')
-        incl_path = self.get_data_file('shared_anno.iff')
-        multichunk = djvu.Multichunk(width, height, 100, sjbz=sjbz_path, incl=incl_path)
-        djvu_file = multichunk.save()
-        with temporary.directory() as tmpdir:
-            tmp_djvu_path = os.path.join(tmpdir, 'index.djvu')
-            tmp_incl_path = os.path.join(tmpdir, 'shared_anno.iff')
-            os.link(djvu_file.name, tmp_djvu_path)
-            shutil.copyfile(incl_path, tmp_incl_path)
-            out_image = ddjvu(tmp_djvu_path, fmt='pbm')
-            self.assert_images_equal(in_image, out_image)
+        with Image.open(path) as in_image:
+            width, height = in_image.size
+            sjbz_path = self.get_data_file('onebit.djvu')
+            incl_path = self.get_data_file('shared_anno.iff')
+            multichunk = djvu.Multichunk(width, height, 100, sjbz=sjbz_path, incl=incl_path)
+            djvu_file = multichunk.save()
+            with temporary.directory() as tmpdir:
+                tmp_djvu_path = os.path.join(tmpdir, 'index.djvu')
+                tmp_incl_path = os.path.join(tmpdir, 'shared_anno.iff')
+                os.link(djvu_file.name, tmp_djvu_path)
+                shutil.copyfile(incl_path, tmp_incl_path)
+                out_image = ddjvu(tmp_djvu_path, fmt='pbm')
+                self.addCleanup(out_image.close)
+                self.assert_images_equal(in_image, out_image)
 
 
 class ValidatePageIdTestCase(TestCase):
@@ -189,6 +194,3 @@ class BundleDjvuViaIndirectTestCase(TestCase):
             )
             self.assertTrue(os.path.exists(djvu_path.name))
             self.assertEqual(2, len(self._wait_called))
-
-
-# vim:ts=4 sts=4 sw=4 et

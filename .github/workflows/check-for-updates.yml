@@ -24,5 +24,3 @@ jobs:
     - name: check for Boost updates
       run:
         ./private/check-new-boost-release
-
-# vim:ts=2 sts=2 sw=2 et

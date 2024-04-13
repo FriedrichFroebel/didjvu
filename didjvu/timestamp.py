@@ -1,6 +1,5 @@
-# encoding=UTF-8
-
-# Copyright © 2012-2019 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2012-2024 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2022-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -17,8 +16,8 @@
 Timestamps.
 """
 
-import time
 import datetime
+import time
 
 
 class Timestamp:
@@ -69,6 +68,7 @@ def now():
     return Timestamp(time.time())
 
 
-__all__ = ['Timestamp', 'now']
-
-# vim:ts=4 sts=4 sw=4 et
+__all__ = [
+    'Timestamp',
+    'now'
+]

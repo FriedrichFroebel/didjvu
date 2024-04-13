@@ -1,6 +1,4 @@
-# encoding=UTF-8
-
-# Copyright © 2015-2021 Jakub Wilk <jwilk@jwilk.net>
+# Copyright © 2023-2024 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -48,5 +46,3 @@ class MainEncodeTestCase(TestCase):
             target_file.seek(0)
             first_bytes = target_file.read(340)
             self.assertEqual(340, len(first_bytes), first_bytes)
-
-# vim:ts=4 sts=4 sw=4 et
