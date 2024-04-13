@@ -480,3 +480,11 @@ class MetadataTestCase(UuuidCheckMixin, TestCase):
         for backend in XMP_BACKENDS:
             with self.subTest(backend=backend):
                 self._test_io_error(backend)
+
+    def test_versions(self):
+        for backend in XMP_BACKENDS:
+            with self.subTest(backend=backend):
+                _ = backend.MetadataBase()  # Skip if dummy.
+                versions = backend.versions
+                self.assertTrue(versions)
+                self.assertIsInstance(versions, list)
