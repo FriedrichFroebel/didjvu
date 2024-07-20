@@ -15,11 +15,11 @@ jobs:
       matrix:
         include:
         - python: 3.8
-          gamera: v4.1.0
+          gamera: pypi
         - python: 3.9
-          gamera: v4.1.0
+          gamera: pypi
         - python: '3.10'
-          gamera: v4.1.0
+          gamera: pypi
         - python: 3.8
           gamera: master
         - python: 3.9
@@ -70,43 +70,41 @@ jobs:
       run: |
         command -v ${{ env.cc }} | grep /ccache/
         command -v ${{ env.cxx }} | grep /ccache/
-    - name: restore ccache data
-      uses: actions/cache@v4
-      with:
-        path: ~/.ccache
-        key:
-          ccache-ubuntu-latest-${{ env.cc }}-${{ matrix.gamera }}-py${{ matrix.python }}
-        restore-keys:
-          ccache-ubuntu-latest-${{ env.cc }}-${{ matrix.gamera }}-py${{ matrix.python }}
-      if: ${{ matrix.gamera != 'master' }}
     - name: update PIP
       run:
         python -m pip install --upgrade pip
     - name: install wheel
       run:
         python -m pip install --upgrade wheel
-    - name: download Gamera
+    - name: download Gamera from GitHub
       run: |
         url="https://github.com/hsnr-gamera/gamera-4/archive/${{ matrix.gamera }}.tar.gz"
         mkdir -p deps/
         wget "$url" -O deps/gamera-${{ matrix.gamera }}.tar.gz
-    - name: unpack Gamera
+      if: ${{ matrix.gamera == 'master' }}
+    - name: unpack Gamera from GitHub
       run: |
         cd deps/
         tar -xzf gamera-*.tar.gz
-    - name: build and install Gamera
+      if: ${{ matrix.gamera == 'master' }}
+    - name: build and install Gamera from unpacked archive
       run: |
         cd deps/gamera-*/
         python -m pip install --verbose .
       env:
         CC: ${{ env.cc }}
         CXX: ${{ env.cxx }}
+      if: ${{ matrix.gamera == 'master' }}
     - name: remove Gamera source
       run:
         rm -rf deps
+      if: ${{ matrix.gamera == 'master' }}
     - name: install package
       run: |
         python -m pip install .[dev,docs]
+      env:
+        CC: ${{ env.cc }}
+        CXX: ${{ env.cxx }}
     # Package breaks for Python 3.12 and has been archived anyway.
     # Corresponding issue: https://github.com/python-xmp-toolkit/python-xmp-toolkit/issues/90
     - name: install python-xml-toolkit

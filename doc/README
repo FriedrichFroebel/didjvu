@@ -15,7 +15,7 @@ Prerequisites
 The following software is required:
 
 * Python_ 3 (≥ 3.6)
-* Gamera-4_ (≥ 4.0) (not available on PyPI)
+* Gamera-4_ (≥ 4.0)
 * Pillow_
 * DjVuLibre_ (≥ 3.5.22)
 * minidjvu_ (≥ 0.8) for the ``--pages-per-dict``/``-p`` option
