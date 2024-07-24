@@ -114,6 +114,7 @@ jobs:
     - name: install python-xml-toolkit
       run: |
         mkdir -p deps/
+        cd deps/
         wget https://github.com/python-xmp-toolkit/python-xmp-toolkit/archive/refs/heads/master.tar.gz
         cd deps
         mkdir -p python-xmp-toolkit/
