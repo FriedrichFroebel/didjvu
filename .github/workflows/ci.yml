@@ -118,7 +118,7 @@ jobs:
         wget https://github.com/python-xmp-toolkit/python-xmp-toolkit/archive/refs/heads/master.tar.gz
         mkdir -p python-xmp-toolkit/
         tar -xvzf master.tar.gz --strip-components=1 -C python-xmp-toolkit
-        cd python-xmp-toolkit-*
+        cd python-xmp-toolkit
         pip install .
       if: ${{ matrix.python == '3.12' || matrix.python == '3.13-dev' }}
     # `libboost-python-dev` cannot be used, as this only works with the Python version shipped by the system.
