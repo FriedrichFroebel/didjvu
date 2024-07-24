@@ -116,7 +116,6 @@ jobs:
         mkdir -p deps/
         cd deps/
         wget https://github.com/python-xmp-toolkit/python-xmp-toolkit/archive/refs/heads/master.tar.gz
-        cd deps
         mkdir -p python-xmp-toolkit/
         tar -xvzf master.tar.gz --strip-components=1 -C python-xmp-toolkit
         cd python-xmp-toolkit-*
