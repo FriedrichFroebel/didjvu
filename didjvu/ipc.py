@@ -19,7 +19,7 @@ Interprocess communication
 import errno
 import logging
 import os
-import pipes
+import shlex
 import re
 import signal
 import subprocess
@@ -76,7 +76,7 @@ del get_signal_names
 # ==========
 
 def shell_escape(commandline):
-    return ' '.join(map(pipes.quote, commandline))
+    return ' '.join(map(shlex.quote, commandline))
 
 
 class Subprocess(subprocess.Popen):
