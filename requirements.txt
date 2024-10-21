@@ -1,6 +1,6 @@
 # Ensure that we always test against the latest versions
 # as soon as they get released by pinning them here and
 # letting `dependabot` update them for new releases.
-pillow==10.4.0
+pillow==11.0.0
 python-xmp-toolkit==2.0.2
 py3exiv2==0.12.0 
