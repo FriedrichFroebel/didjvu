@@ -17,11 +17,15 @@ Filesystem functions
 """
 
 import os
+import sys
+
 
 _BLOCK_SIZE = 1 << 20  # 1 MiB
 
 
 def copy_file(input_file, output_file):
+    if output_file is sys.stdout:
+        output_file = output_file.buffer
     length = 0
     while True:
         block = input_file.read(_BLOCK_SIZE)

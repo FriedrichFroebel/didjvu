@@ -13,6 +13,9 @@
 # for more details.
 
 import io
+import subprocess
+import sys
+from tempfile import NamedTemporaryFile
 
 from tests.tools import mock, TestCase
 
@@ -38,6 +41,26 @@ class CopyFileTestCase(TestCase):
         with self.subTest(data=data):
             with mock.patch.object(fs, '_BLOCK_SIZE', 1):
                 self._test_copy_file(data)
+
+    def test_copy_file__to_stdout(self):
+        with NamedTemporaryFile() as source_file:
+            source_file.write(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09')
+            source_file.seek(0)
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    '-c',
+                    (
+                        f'import sys; from didjvu.fs import copy_file; '
+                        f'source_file = open({source_file.name!r}, mode="rb"); copy_file(source_file, sys.stdout); source_file.close()'
+                    )
+                ],
+                stdout=subprocess.PIPE,
+                stderr=subprocess.PIPE,
+            )
+            self.assertEqual(0, result.returncode, result)
+            self.assertEqual(b'', result.stderr, result)
+            self.assertEqual(b'\x00\x01\x02\x03\x04\x05\x06\x07\x08\x09', result.stdout)
 
 
 class ReplaceExtensionTestCase(TestCase):
