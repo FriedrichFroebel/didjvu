@@ -1,3 +1,13 @@
+didjvu (0.10.2) unstable; urgency=low
+
+  * Report XMP backend versions as well.
+  * Improve CLI help for output template of `separate` option.
+  * Stop testing on Python < 3.9.
+  * Add support for Python 3.13.
+  * Fix writing `encode` output to stdout.
+
+ -- FriedrichFroebel <>  Thu, 14 Nov 2024 20:15:00 +0100
+
 didjvu (0.10.1) unstable; urgency=low
 
   * Add support for Python 3.12.
