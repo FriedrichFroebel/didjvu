@@ -217,24 +217,19 @@ class ArgumentParserTestCase(TestCase):
                 parser.parse_arguments(dict())
             self.assertEqual(exception_manager.exception.args, (2,))
         action_values = ','.join(self.action_names)
-        if sys.version_info < (3, 12):
+        if sys.version_info < (3, 12, 8):
+            # This unfortunately has been changed in a patch release:
+            # https://github.com/python/cpython/commit/21524eec48f5b1c807f185253e9350cfdd897ce0
             action_strings = ', '.join(map(repr, self.action_names))
-            self.assertMultiLineEqual(
-                stderr.getvalue(),
-                (
-                    f'usage: didjvu [-h] [--version] {{{action_values}}} ...\n'
-                    f"didjvu: error: argument {{{action_values}}}: invalid choice: 'eggs' (choose from {action_strings})\n"
-                )
-            )
         else:
-            action_strings = ', '.join(map(lambda x: f"'{x}'", self.action_names))
-            self.assertMultiLineEqual(
-                stderr.getvalue(),
-                (
-                    f'usage: didjvu [-h] [--version] {{{action_values}}} ...\n'
-                    f"didjvu: error: argument {{{action_values}}}: invalid choice: 'eggs' (choose from {action_strings})\n"
-                )
-            )
+            action_strings = ', '.join(map(str, self.action_names))
+        self.assertMultiLineEqual(
+            (
+                f'usage: didjvu [-h] [--version] {{{action_values}}} ...\n'
+                f"didjvu: error: argument {{{action_values}}}: invalid choice: 'eggs' (choose from {action_strings})\n"
+            ),
+            stderr.getvalue(),
+        )
 
     def _test_action(self, action, *args):
         stderr = io.StringIO()
