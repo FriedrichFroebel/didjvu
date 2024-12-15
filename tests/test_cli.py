@@ -217,16 +217,17 @@ class ArgumentParserTestCase(TestCase):
                 parser.parse_arguments(dict())
             self.assertEqual(exception_manager.exception.args, (2,))
         action_values = ','.join(self.action_names)
-        action_strings = ', '.join(map(repr, self.action_names))
-        if sys.version_info < (3, 9):
+        if sys.version_info < (3, 12):
+            action_strings = ', '.join(map(repr, self.action_names))
             self.assertMultiLineEqual(
                 stderr.getvalue(),
                 (
                     f'usage: didjvu [-h] [--version] {{{action_values}}} ...\n'
-                    f"didjvu: error: invalid choice: 'eggs' (choose from {action_strings})\n"
+                    f"didjvu: error: argument {{{action_values}}}: invalid choice: 'eggs' (choose from {action_strings})\n"
                 )
             )
         else:
+            action_strings = ', '.join(map(lambda x: f"'{x}'", self.action_names))
             self.assertMultiLineEqual(
                 stderr.getvalue(),
                 (
