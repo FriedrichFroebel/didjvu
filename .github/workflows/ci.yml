@@ -47,6 +47,7 @@ jobs:
           docbook-xsl
           exiv2
           gir1.2-gexiv2-0.10
+          libcairo2-dev
           libexempi[38]
           libpng-dev
           libtiff-dev
