@@ -248,7 +248,7 @@ didjvu (0.2.2) unstable; urgency=low
     TIFF images.
   * Check Python version in setup.py.
   * Let the setup.py script build the manual page.
-  * Disable the Gatos et. al thresholding algorithm for the time being, as it
+  * Disable the Gatos et al. thresholding algorithm for the time being, as it
     didn't work anyway.
   * Optimize Gamera → PIL conversions.
   * Prevent NumPy from being imported by Gamera (loading it takes noticeable
