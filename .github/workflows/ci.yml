@@ -137,7 +137,7 @@ jobs:
         wget $BOOST_URL -O deps/boost.tar.gz
         cd deps
         tar -xzf boost.tar.gz
-        cd boost_*/
+        cd boost-*/
         ./bootstrap.sh --with-libraries=python
         sudo ./b2 install
         rm -rf deps
