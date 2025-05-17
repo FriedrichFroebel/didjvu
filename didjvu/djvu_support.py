@@ -278,6 +278,8 @@ class Multichunk:
             self['sjbz'].close()
         if 'PPM' in self:
             self['PPM'].close()
+        for chunk in self._chunks.values():
+            chunk.close()
 
 
 _DJVU_HEADER = b'AT&TFORM\0\0\0\0DJVMDIRM\0\0\0\0\1'
