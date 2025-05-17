@@ -325,8 +325,6 @@ class Main:
         LOGGER.info('- converting to DjVu')
         djvu_doc = image_to_djvu(width, height, image, mask, options=options)
         djvu_file = djvu_doc.save()
-        if 'sjbz' in djvu_doc:
-            djvu_doc['sjbz'].close()
         try:
             bytes_out = fs.copy_file(djvu_file, output)
         finally:
@@ -346,6 +344,7 @@ class Main:
                 internal_properties=internal_properties,
             )
             metadata.write(xmp_output)
+        djvu_doc.close()
 
     def separate_one(self, options, image_filename, output):
         LOGGER.info(f'{image_filename}:')

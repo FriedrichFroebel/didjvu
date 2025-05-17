@@ -273,6 +273,12 @@ class Multichunk:
             self._pristine = True
             return self._file
 
+    def close(self):
+        if 'sjbz' in self:
+            self['sjbz'].close()
+        if 'PPM' in self:
+            self['PPM'].close()
+
 
 _DJVU_HEADER = b'AT&TFORM\0\0\0\0DJVMDIRM\0\0\0\0\1'
 
