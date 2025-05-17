@@ -16,6 +16,7 @@
 Wrappers for the DjVuLibre utilities
 """
 
+import atexit
 import os
 import re
 import struct
@@ -71,6 +72,7 @@ def bitonal_to_djvu(image, dpi=300, loss_level=0):
         pbm_file.name,
         djvu_file.name
     ]
+    atexit.register(djvu_file.close)  # TODO: Refactor for cleaner solution.
     return utils.Proxy(djvu_file, ipc.Subprocess(args).wait, [pbm_file])
 
 
@@ -94,6 +96,9 @@ def photo_to_djvu(image, dpi=100, slices=IW44_SLICES_DEFAULT, gamma=2.2, mask_im
         djvu_path = os.path.join(djvu_dir, 'result.djvu')
         args += [ppm_file.name, djvu_path]
         ipc.Subprocess(args).wait()
+        if mask_image is not None:
+            pbm_file.close()
+        pbm_file.close()
         return temporary.hardlink(djvu_path, suffix='.djvu')
 
 
