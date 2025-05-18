@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-# Copyright © 2023-2024 FriedrichFroebel
+# Copyright © 2023-2025 FriedrichFroebel
 #
 # This file is part of didjvu.
 #
@@ -25,31 +25,28 @@ from bs4 import BeautifulSoup
 
 
 BASE_URL = "https://www.boost.org"
-URL = f"{BASE_URL}/users/download/"
+URL = f"{BASE_URL}/feed/downloads.rss"
 
 
 @dataclass
 class BoostRelease:
     version: str = None
-    doc_base: str = None
-    source_download: str = None
-    release_notes: str = None
+
+    @property
+    def release_notes(self) -> str:
+        return f"https://www.boost.org/releases/{self.version}/"
 
 
 def fetch_latest_boost_release():
-    soup = BeautifulSoup(requests.get(URL).content, features="lxml")
-    news_title = soup.find("span", class_="news-title")
-    version = news_title.text.split(" ", maxsplit=1)[1]
-    doc_base = soup.find("a", string="Documentation")["href"]
-    doc_base = f"{BASE_URL}{doc_base}"
-    release_notes = soup.find("a", string="Release Notes")["href"]
-    release_notes = f"{BASE_URL}{release_notes}"
-    download_table = soup.find("table", class_="download-table")
-    download_table_rows = soup.find_all("tr")
-    source_download = download_table_rows[1].find("a")["href"]
+    soup = BeautifulSoup(requests.get(URL).content, features="xml")
 
+    item = soup.find("item")
+    title = item.find("title").text
+    version = title.split(" ", maxsplit=1)[1]
+    assert all(character in "0123456789." for character in version), version
     assert version, version
-    return BoostRelease(version, doc_base, source_download, release_notes)
+
+    return BoostRelease(version)
 
 
 def get_all_workflow_files():
