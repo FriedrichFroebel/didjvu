@@ -59,6 +59,7 @@ class BitonalToDjvuTestCase(TestCase):
         with Image.open(path) as in_image:
             djvu_file = djvu.bitonal_to_djvu(in_image)
             out_image = ddjvu(djvu_file, fmt='pbm')
+            self.addCleanup(djvu_file.close)
             self.addCleanup(out_image.close)
             self.assert_images_equal(in_image, out_image)
 
@@ -72,6 +73,7 @@ class PhotoToDjvuTestCase(TestCase):
                 mask_image = in_image.convert('1')
                 djvu_file = djvu.photo_to_djvu(in_image, mask_image=mask_image)
                 out_image = ddjvu(djvu_file, fmt='ppm')
+                self.addCleanup(djvu_file.close)
                 self.addCleanup(out_image.close)
                 self.assert_image_sizes_equal(in_image, out_image)
 
@@ -90,6 +92,7 @@ class DjvuToIw44TestCase(TestCase):
             in_data = in_djvu.read()
         out_djvu.seek(0)
         out_data = out_djvu.read()
+        self.addCleanup(out_djvu.close)
         self.assertGreater(len(in_data), len(out_data))
 
 
@@ -104,6 +107,7 @@ class MultichunkTestCase(TestCase):
             out_image = ddjvu(djvu_file, fmt='pbm')
             self.addCleanup(out_image.close)
             self.assert_images_equal(in_image, out_image)
+            self.addCleanup(djvu_file.close)
 
     def test_incl(self):
         path = self.get_data_file('onebit.bmp')
@@ -113,6 +117,7 @@ class MultichunkTestCase(TestCase):
             incl_path = self.get_data_file('shared_anno.iff')
             multichunk = djvu.Multichunk(width, height, 100, sjbz=sjbz_path, incl=incl_path)
             djvu_file = multichunk.save()
+            self.addCleanup(djvu_file.close)
             with temporary.directory() as tmpdir:
                 tmp_djvu_path = os.path.join(tmpdir, 'index.djvu')
                 tmp_incl_path = os.path.join(tmpdir, 'shared_anno.iff')
@@ -193,4 +198,5 @@ class BundleDjvuViaIndirectTestCase(TestCase):
                 *[self.get_data_file('onebit.png')]
             )
             self.assertTrue(os.path.exists(djvu_path.name))
+            self.addCleanup(djvu_path.close)
             self.assertEqual(2, len(self._wait_called))

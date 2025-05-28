@@ -71,7 +71,12 @@ def bitonal_to_djvu(image, dpi=300, loss_level=0):
         pbm_file.name,
         djvu_file.name
     ]
-    return utils.Proxy(djvu_file, ipc.Subprocess(args).wait, [pbm_file])
+
+    def wait_function():
+        ipc.Subprocess(args).wait()
+        pbm_file.close()
+
+    return utils.Proxy(djvu_file, wait_function, [pbm_file])
 
 
 def photo_to_djvu(image, dpi=100, slices=IW44_SLICES_DEFAULT, gamma=2.2, mask_image=None, crcb=CRCB.normal):
@@ -94,6 +99,9 @@ def photo_to_djvu(image, dpi=100, slices=IW44_SLICES_DEFAULT, gamma=2.2, mask_im
         djvu_path = os.path.join(djvu_dir, 'result.djvu')
         args += [ppm_file.name, djvu_path]
         ipc.Subprocess(args).wait()
+        if mask_image is not None:
+            pbm_file.close()
+        ppm_file.close()
         return temporary.hardlink(djvu_path, suffix='.djvu')
 
 
@@ -264,6 +272,14 @@ class Multichunk:
             self._file = temporary.hardlink(djvu_filename)
             self._pristine = True
             return self._file
+
+    def close(self):
+        if 'sjbz' in self:
+            self['sjbz'].close()
+        if 'PPM' in self:
+            self['PPM'].close()
+        for chunk in self._chunks.values():
+            chunk.close()
 
 
 _DJVU_HEADER = b'AT&TFORM\0\0\0\0DJVMDIRM\0\0\0\0\1'

@@ -344,6 +344,7 @@ class Main:
                 internal_properties=internal_properties,
             )
             metadata.write(xmp_output)
+        djvu_doc.close()
 
     def separate_one(self, options, image_filename, output):
         LOGGER.info(f'{image_filename}:')

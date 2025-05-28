@@ -15,6 +15,8 @@
 import collections
 import contextlib
 import io
+import shutil
+import subprocess
 import sys
 
 from tests.tools import mock, TestCase
@@ -166,17 +168,15 @@ class ArgumentParserTestCase(TestCase):
         cli.ArgumentParser(self.methods, 'djvu')
 
     def test_no_args(self):
-        stdout = io.StringIO()
-        with mock.patch('sys.argv', ['didjvu']), \
-                contextlib.redirect_stdout(stdout):
-            parser = cli.ArgumentParser(self.methods, 'djvu')
-            with self.assertRaises(expected_exception=SystemExit) as exception_manager:
-                parser.parse_arguments(dict())
-            self.assertEqual(exception_manager.exception.args, (2,))
-
+        result = subprocess.run(
+            [shutil.which('didjvu')],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(2, result.returncode, result)
         actions = ','.join(self.action_names)
         self.assertMultiLineEqual(
-            stdout.getvalue(),
+            result.stdout,
             (
                 f'usage: didjvu [-h] [--version] {{{actions}}} ...\n'
                 'didjvu: error: too few arguments\n'
@@ -184,15 +184,14 @@ class ArgumentParserTestCase(TestCase):
         )
 
     def _test_action_no_args(self, action):
-        stderr = io.StringIO()
-        with mock.patch('sys.argv', ['didjvu', action]), \
-                contextlib.redirect_stderr(stderr):
-            parser = cli.ArgumentParser(self.methods, 'djvu')
-            with self.assertRaises(expected_exception=SystemExit) as exception_manager:
-                parser.parse_arguments(dict())
-            self.assertEqual(exception_manager.exception.args, (2,))
+        result = subprocess.run(
+            [shutil.which('didjvu'), action],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(2, result.returncode, result)
         self.assertRegex(
-            stderr.getvalue(),
+            result.stderr,
             (
                 r'(?s)\A'
                 f'usage: didjvu {action} .*\n'
@@ -209,13 +208,13 @@ class ArgumentParserTestCase(TestCase):
                 self._test_action_no_args(action=action)
 
     def test_bad_action(self, action='eggs'):
-        stderr = io.StringIO()
-        with mock.patch('sys.argv', ['didjvu', action]), \
-                contextlib.redirect_stderr(stderr):
-            parser = cli.ArgumentParser(self.methods, 'djvu')
-            with self.assertRaises(expected_exception=SystemExit) as exception_manager:
-                parser.parse_arguments(dict())
-            self.assertEqual(exception_manager.exception.args, (2,))
+        result = subprocess.run(
+            [shutil.which('didjvu'), action],
+            capture_output=True,
+            text=True,
+        )
+        self.assertEqual(2, result.returncode, result)
+
         action_values = ','.join(self.action_names)
         if sys.version_info < (3, 12, 8):
             # This unfortunately has been changed in a patch release:
@@ -228,7 +227,7 @@ class ArgumentParserTestCase(TestCase):
                 f'usage: didjvu [-h] [--version] {{{action_values}}} ...\n'
                 f"didjvu: error: argument {{{action_values}}}: invalid choice: 'eggs' (choose from {action_strings})\n"
             ),
-            stderr.getvalue(),
+            result.stderr,
         )
 
     def _test_action(self, action, *args):
