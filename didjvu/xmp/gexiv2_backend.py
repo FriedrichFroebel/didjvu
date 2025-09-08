@@ -22,6 +22,7 @@ import re
 import gi
 try:
     gi.require_version('GExiv2', '0.10')
+    gi.require_version('GioUnix', '2.0')
 except ValueError as exception:  # no coverage
     raise ImportError(exception)
 # noinspection PyUnresolvedReferences
