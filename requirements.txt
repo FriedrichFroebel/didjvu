@@ -2,5 +2,5 @@
 # as soon as they get released by pinning them here and
 # letting `dependabot` update them for new releases.
 pillow==12.0.0
-python-xmp-toolkit==2.0.2
+python-xmp-toolkit==2.1.0
 py3exiv2==0.12.0 
