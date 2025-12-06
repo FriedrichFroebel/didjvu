@@ -82,6 +82,7 @@ Differences from upstream
 -------------------------
 
 * Package requires Python ≥ 3.6.
+  * Please note that Python 3.6 support has been dropped here in the meantime and the latest code might stop working on EOL Python versions.
 * Drop old Gamera workarounds.
 * Migrate from *nose* to plain *unittest* stdlib module.
 * Conform to PEP8 coding style.
