@@ -1,3 +1,11 @@
+didjvu (0.11.0) unstable; urgency=low
+
+  * Drop support for Python <= 3.9.
+  * Fix tests for Python >= 3.12.8.
+  * Load GioUnix 2.0 now required for loading GExiv2 0.10
+
+ -- FriedrichFroebel <>  Sun, 07 Dec 2025 11:50:00 +0100
+
 didjvu (0.10.2) unstable; urgency=low
 
   * Report XMP backend versions as well.
