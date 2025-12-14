@@ -6,12 +6,12 @@ on:
 
 env:
   # Allow automated checks.
-  BOOST_VERSION: 1.89.0
+  BOOST_VERSION: 1.90.0
   # The original releases seem to randomly fail with HTTP code 404, maybe due to rate
   # limiting. This makes our CI too unstable, thus switch to alternative downloads.
   # https://github.com/boostorg/boost/releases
-  BOOST_URL: https://github.com/boostorg/boost/releases/download/boost-1.89.0/boost-1.89.0-b2-nodocs.tar.gz
-  # BOOST_URL: https://archives.boost.io/release/1.88.0/source/boost_1_88_0.tar.gz
+  BOOST_URL: https://github.com/boostorg/boost/releases/download/boost-1.90.0/boost-1.90.0-b2-nodocs.tar.gz
+  # BOOST_URL: https://archives.boost.io/release/1.90.0/source/boost_1_90_0.tar.gz
 
 jobs:
   main:
