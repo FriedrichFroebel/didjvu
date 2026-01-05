@@ -37,7 +37,11 @@ class TestCase(_TestCase):
     def assert_images_equal(self, image1, image2):
         self.assertEqual(image1.size, image2.size)
         self.assertEqual(image1.mode, image2.mode)
-        equal = list(image1.getdata()) == list(image2.getdata())
+        try:
+            equal = list(image1.get_flattened_data()) == list(image2.get_flattened_data())
+        except AttributeError:
+            # Pillow < 12.1.0
+            equal = list(image1.getdata()) == list(image2.getdata())
         message = None
         if not equal:
             with temporary.file(delete=False, suffix='.ppm') as file1:
