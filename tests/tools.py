@@ -39,7 +39,6 @@ class TestCase(_TestCase):
         self.assertEqual(image1.mode, image2.mode)
         try:
             equal = list(image1.get_flattened_data()) == list(image2.get_flattened_data())
-            equal = list(image1.getdata()) == list(image2.getdata())
         except AttributeError:
             # Pillow < 12.1.0
             equal = list(image1.getdata()) == list(image2.getdata())
