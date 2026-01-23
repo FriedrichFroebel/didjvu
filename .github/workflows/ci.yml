@@ -75,9 +75,6 @@ jobs:
     - name: update PIP
       run:
         python -m pip install --upgrade pip
-    - name: install wheel
-      run:
-        python -m pip install --upgrade wheel
     - name: download Gamera from GitHub
       run: |
         url="https://github.com/hsnr-gamera/gamera-4/archive/${{ matrix.gamera }}.tar.gz"
