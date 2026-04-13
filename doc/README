@@ -14,7 +14,7 @@ Prerequisites
 
 The following software is required:
 
-* Python_ 3 (≥ 3.6)
+* Python_ 3 (non-EOL versions)
 * Gamera-4_ (≥ 4.0)
 * Pillow_
 * DjVuLibre_ (≥ 3.5.22)
