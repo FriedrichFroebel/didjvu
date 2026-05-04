@@ -4,6 +4,12 @@ on:
 - push
 - pull_request
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+permissions: {}
+
 env:
   # Allow automated checks.
   BOOST_VERSION: 1.91.0
@@ -35,9 +41,11 @@ jobs:
     runs-on: ubuntu-latest
     name: Python ${{ matrix.python }} with Gamera ${{ matrix.gamera }}
     steps:
-    - uses: actions/checkout@v6
+    - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd  # v6.0.2
+      with:
+        persist-credentials: false
     - name: set up Python
-      uses: actions/setup-python@v6
+      uses: actions/setup-python@a309ff8b426b58ec0e2a45f0f869d46889d02405  # v6.2.0
       with:
         python-version: ${{ matrix.python }}
     - name: apt update
@@ -65,24 +73,26 @@ jobs:
         echo "cxx=g++" >> $GITHUB_ENV
     - name: apt install GCC
       run:
-        sudo apt-get install ${{ env.cc }} ${{ env.cxx }}
+        sudo apt-get install ${cc} ${cxx}
     - name: install ccache
       run: |
         sudo apt-get install ccache
         echo "/usr/lib/ccache:$PATH" >> $GITHUB_PATH
     - name: check ccache setup
       run: |
-        command -v ${{ env.cc }} | grep /ccache/
-        command -v ${{ env.cxx }} | grep /ccache/
+        command -v ${cc} | grep /ccache/
+        command -v ${cxx} | grep /ccache/
     - name: update PIP
       run:
         python -m pip install --upgrade pip
     - name: download Gamera from GitHub
       run: |
-        url="https://github.com/hsnr-gamera/gamera-4/archive/${{ matrix.gamera }}.tar.gz"
+        url="https://github.com/hsnr-gamera/gamera-4/archive/${GAMERA_VERSION}.tar.gz"
         mkdir -p deps/
-        wget "$url" -O deps/gamera-${{ matrix.gamera }}.tar.gz
+        wget "$url" -O "deps/gamera-${GAMERA_VERSION}.tar.gz"
       if: ${{ matrix.gamera == 'master' }}
+      env:
+        GAMERA_VERSION: ${{ matrix.gamera }}
     - name: unpack Gamera from GitHub
       run: |
         cd deps/
