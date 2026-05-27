@@ -216,7 +216,7 @@ class ArgumentParserTestCase(TestCase):
         self.assertEqual(2, result.returncode, result)
 
         action_values = ','.join(self.action_names)
-        if sys.version_info < (3, 12, 8) or sys.version > (3, 14, 4):
+        if sys.version_info < (3, 12, 8) or sys.version_info > (3, 14, 4):
             # This unfortunately has been changed in a patch release:
             # https://github.com/python/cpython/commit/21524eec48f5b1c807f185253e9350cfdd897ce0
             # https://github.com/python/cpython/pull/144983
