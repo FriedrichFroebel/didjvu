@@ -24,10 +24,6 @@ jobs:
     strategy:
       matrix:
         include:
-        - python: '3.10'
-          gamera: pypi
-        - python: '3.10'
-          gamera: master
         - python: '3.11'
           gamera: master
         - python: '3.12'

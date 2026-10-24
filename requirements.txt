@@ -1,6 +1,7 @@
 # Ensure that we always test against the latest versions
 # as soon as they get released by pinning them here and
 # letting `dependabot` update them for new releases.
+gamera==4.1.0
 pillow==12.3.0
 python-xmp-toolkit==2.1.0
 py3exiv2==0.12.0 

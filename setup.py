@@ -41,10 +41,10 @@ setup(
         exclude=['tests', 'tests.*', 'private', 'private.*']
     ),
     include_package_data=True,
-    python_requires='>=3.10, <4',
+    python_requires='>=3.11, <4',
     install_requires=[
         'gamera>=4.0.0',
-        'Pillow',
+        'pillow',
     ],
     extras_require={
         'dev': [
