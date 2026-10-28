@@ -135,7 +135,7 @@ class EnvironmentTestCase(TestCase):
         with temporary.directory() as tmpdir:
             command_name = temporary.name(dir=tmpdir)
             command_path = os.path.join(tmpdir, command_name)
-            with open(command_path, 'wt') as file:
+            with open(command_path, 'w') as file:
                 print('#!/bin/sh', file=file)
                 print('printf 42', file=file)
             os.chmod(command_path, 0o700)

@@ -82,11 +82,11 @@ def load_image(filename):
         else:
             gamera_modes = set()
         if pil_image.mode not in gamera_modes:
-            raise IOError
+            raise OSError
         # Gamera supports more TIFF compression formats than PIL.
         # https://mail.python.org/pipermail/image-sig/2003-July/002354.html
         image = _load_image(filename)
-    except IOError:
+    except OSError:
         # Gamera supports importing only 8-bit and RGB from PIL:
         if pil_image.mode[:2] in {'1', '1;', 'I', 'I;', 'L;'}:
             pil_image = pil_image.convert('L')

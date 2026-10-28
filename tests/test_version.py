@@ -27,7 +27,7 @@ DOC_DIRECTORY = os.path.join(_HERE, os.pardir, 'doc')
 class ChangelogTestCase(TestCase):
     def test_changelog(self):
         path = os.path.join(DOC_DIRECTORY, 'changelog')
-        with open(path, 'rt') as file:
+        with open(path) as file:
             line = file.readline()
         changelog_version = line.split()[1].strip('()')
         self.assertEqual(changelog_version, version.__version__)
@@ -39,7 +39,7 @@ class ManpageTestCase(TestCase):
         # Do not feed path into `iterparse()` due to
         # https://github.com/python/cpython/issues/69893
         with open(path, mode='rb') as fd:
-            for event, element in ElementTree.iterparse(fd):
+            for _event, element in ElementTree.iterparse(fd):
                 if element.tag == 'refmiscinfo' and element.get('class') == 'version':
                     self.assertEqual(element.text, version.__version__)
                     break

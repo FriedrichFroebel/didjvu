@@ -55,8 +55,7 @@ class CopyFileTestCase(TestCase):
                         f'source_file = open({source_file.name!r}, mode="rb"); copy_file(source_file, sys.stdout); source_file.close()'
                     )
                 ],
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
+                capture_output=True,
             )
             self.assertEqual(0, result.returncode, result)
             self.assertEqual(b'', result.stderr, result)

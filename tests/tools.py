@@ -13,7 +13,6 @@
 # for more details.
 
 import contextlib
-import functools
 import os
 from unittest import mock, SkipTest, TestCase as _TestCase
 
@@ -24,7 +23,6 @@ class TestCase(_TestCase):
     maxDiff = None
     SkipTest = SkipTest
 
-    @functools.lru_cache(maxsize=1)
     def get_data_directory(self):
         return os.path.join(os.path.dirname(__file__), 'data')
 

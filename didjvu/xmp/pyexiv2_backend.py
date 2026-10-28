@@ -116,7 +116,7 @@ class MetadataBase:
         except AttributeError:  # no coverage
             # Python 2.6
             xmp_find = xmp.findall
-        for description in xmp_find('.//' + namespace_tag(namespaces.rdf, 'Description')):
+        for description in xmp_find('.//' + namespace_tag(namespaces.rdf, 'Description')):  # noqa: B007
             pass
         if description is None:
             raise XmpError('Cannot add xmpMM:History')  # no coverage
@@ -136,9 +136,11 @@ class MetadataBase:
     def __init__(self):
         self._fp = fp = temporary.file(suffix='.xmp')
         fp.write(
-            f'<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="{namespaces.rdf}">'
-            '<rdf:RDF/>'
-            '</x:xmpmeta>'.encode('utf-8')
+            (
+                f'<x:xmpmeta xmlns:x="adobe:ns:meta/" xmlns:rdf="{namespaces.rdf}">'
+                '<rdf:RDF/>'
+                '</x:xmpmeta>'
+            ).encode('UTF-8')
         )
         self._reload()
 

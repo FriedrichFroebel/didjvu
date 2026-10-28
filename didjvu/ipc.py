@@ -61,7 +61,7 @@ CalledProcessError = subprocess.CalledProcessError
 class CalledProcessInterrupted(CalledProcessError):
     _signal_names = get_signal_names()
 
-    def __init__(self, signal_id, command):
+    def __init__(self, signal_id, command):  # noqa: B042
         Exception.__init__(self, command, signal_id)
 
     def __str__(self):
@@ -112,7 +112,7 @@ class Subprocess(subprocess.Popen):
         try:
             # noinspection PyArgumentList
             subprocess.Popen.__init__(self, *args, **kwargs)
-        except EnvironmentError as exception:
+        except OSError as exception:
             exception.filename = self.__command
             raise
 

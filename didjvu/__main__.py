@@ -11,10 +11,8 @@
 # FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public License
 # for more details.
 
-from typing import Optional
 
-
-def main(prog: Optional[str] = None) -> None:
+def main(prog: str | None = None) -> None:
     from didjvu.didjvu import Main
     Main(prog=prog)
 

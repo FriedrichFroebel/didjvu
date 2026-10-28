@@ -139,14 +139,14 @@ class ReplaceUnderscoresTestCase(TestCase):
         )
 
 
-class MockActions(object):
+class MockActions:
     def __getattr__(self, name):
         def f(options):
             return name, options
         return f
 
 
-class MockMethod(object):
+class MockMethod:
     def __init__(self):
         self.args = dict()
 

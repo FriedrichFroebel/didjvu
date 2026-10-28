@@ -132,7 +132,7 @@ class ArgumentParser(argparse.ArgumentParser):
         background_subsample = 3
 
     def __init__(self, methods, default_method, prog=None):
-        super(ArgumentParser, self).__init__(formatter_class=argparse.RawDescriptionHelpFormatter, prog=prog)
+        super().__init__(formatter_class=argparse.RawDescriptionHelpFormatter, prog=prog)
         self.add_argument('--version', action=version.VersionAction)
         parser_separate = self.add_subparser('separate', help='generate masks for images')
         parser_encode = self.add_subparser('encode', help='convert images to single-page DjVu documents')

@@ -20,7 +20,7 @@ import itertools
 import logging
 import os
 import sys
-from typing import Any, Dict, Tuple
+from typing import Any
 
 from didjvu import cli
 from didjvu import djvu_support
@@ -34,7 +34,7 @@ from didjvu import utils
 from didjvu import xmp
 
 
-def setup_logging() -> Tuple[logging.Logger, logging.Logger]:
+def setup_logging() -> tuple[logging.Logger, logging.Logger]:
     logger = logging.getLogger('didjvu.main')
     ipc_logger = logging.getLogger('didjvu.ipc')
     logging.NOSY = (logging.INFO + logging.DEBUG) // 2  # type: ignore[attr-defined]
@@ -107,11 +107,11 @@ def subsample_foreground(image, mask, options):
         for sx in range(0, subsampled_image.ncols):
             n = r = g = b = 0
             y = y0
-            for dy in range(ratio):
+            for _dy in range(ratio):
                 if y >= height:
                     break
                 x = x0
-                for dx in range(ratio):
+                for _dx in range(ratio):
                     if x >= width:
                         break
                     pt = gamera_support.Point(x, y)
@@ -406,7 +406,7 @@ class Main:
             bytes_in = 0
             component_filenames = []
             page_id_memo = {}
-            for page, (input_file, mask) in enumerate(zip(options.input, options.masks)):
+            for page, (input_file, _mask) in enumerate(zip(options.input, options.masks)):
                 bytes_in += os.path.getsize(input_file)
                 page_id = templates.expand(options.page_id_template, input_file, page, page_id_memo)
                 try:
@@ -453,8 +453,8 @@ class Main:
             bytes_in = 0
             pixels = [0]
             page_info = []
-            page_id_memo: Dict[str, int] = {}
-            for page_number, (image_filename, mask_filename) in enumerate(zip(options.input, options.masks)):
+            page_id_memo: dict[str, int] = {}
+            for page_number, (image_filename, _mask_filename) in enumerate(zip(options.input, options.masks)):
                 page = utils.Namespace()
                 page_info += [page]
                 bytes_in += os.path.getsize(image_filename)

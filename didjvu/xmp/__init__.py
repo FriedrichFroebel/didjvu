@@ -124,8 +124,8 @@ def metadata(backend_module=backend):
 
         def import_(self, image_filename):
             try:
-                fp = open(f'{image_filename}.xmp', 'rt')
-            except (OSError, IOError) as exception:
+                fp = open(f'{image_filename}.xmp')
+            except OSError as exception:
                 if exception.errno == errno.ENOENT:
                     return
                 raise
